@@ -1,0 +1,11 @@
+2025-12-05 15:54:04 - INFO - Starting Player-Team Network Generation
+2025-12-05 15:54:04 - INFO - Loaded 3603 players, 142 teams
+2025-12-05 15:54:04 - INFO - Processing 7 competitions
+2025-12-05 15:54:45 - INFO - England: 535 nodes, 548 edges
+2025-12-05 15:54:45 - INFO - European_Championship: 476 nodes, 452 edges
+2025-12-05 15:54:45 - INFO - France: 562 nodes, 574 edges
+2025-12-05 15:54:45 - INFO - Germany: 492 nodes, 503 edges
+2025-12-05 15:54:45 - INFO - Italy: 554 nodes, 571 edges
+2025-12-05 15:54:45 - INFO - Spain: 578 nodes, 593 edges
+2025-12-05 15:54:45 - INFO - World_Cup: 634 nodes, 602 edges
+2025-12-05 15:54:45 - INFO - Generated 7 player-team networks
