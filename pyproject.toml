@@ -24,6 +24,9 @@ dependencies = [
     "fastdtw (>=0.3.4,<0.4.0)"
 ]
 
+[project.scripts]
+eda-figures = "src.analysis.eda_figures:main"
+
 [tool.poetry]
 package-mode = false
 
