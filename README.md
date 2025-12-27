@@ -86,6 +86,7 @@ The dataset includes event-level data from:
 
 ## Requirements
 
+- Poetry 2.0+
 - Python 3.12+
 - NetworkX 3.6+
 - pandas, numpy, scipy
@@ -96,7 +97,7 @@ The dataset includes event-level data from:
 
 Install dependencies:
 ```bash
-pip install -e .
+poetry install
 ```
 
 ## Usage
