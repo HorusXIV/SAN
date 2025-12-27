@@ -6,17 +6,15 @@ Creates directed networks where nodes represent teams and edges represent matche
 import networkx as nx
 from pathlib import Path
 from collections import defaultdict
+from networkx.algorithms import community
 
-from src.common import load_json_fixed, setup_logger
+from src.common import load_json_fixed
 from src.config import (
     DATA_DIR,
-    LOG_DIR,
     MATCHES_DIR,
     MATCH_NETWORKS_DIR,
     TEAMS_FILE
 )
-
-logger = setup_logger(__name__, log_dir=LOG_DIR, file_prefix='match_network')
 
 
 def load_teams_info(teams_file):
@@ -155,8 +153,44 @@ def create_match_network(matches_file, teams_info, competition_name):
                 dates='; '.join(edge_data['dates'][:5]),
                 venues='; '.join(set(edge_data['venues'][:5]))
             )
-    
-    return G
+        # Add community detection attributes
+    if len(G.nodes()) > 0 and len(G.edges()) > 0:
+        # Convert to undirected for community detection
+        G_undirected = G.to_undirected()
+        
+        # 1. Louvain method
+        try:
+            louvain_communities = community.greedy_modularity_communities(G_undirected, weight='weight')
+            louvain_dict = {}
+            for idx, comm in enumerate(louvain_communities):
+                for node in comm:
+                    louvain_dict[node] = idx
+            nx.set_node_attributes(G, louvain_dict, 'modularity_class_louvain')
+        except Exception as e:
+            print(f"Warning: Louvain community detection failed for {competition_name}: {e}")
+        
+        # 2. Label Propagation
+        try:
+            label_prop_communities = community.label_propagation_communities(G_undirected)
+            label_prop_dict = {}
+            for idx, comm in enumerate(label_prop_communities):
+                for node in comm:
+                    label_prop_dict[node] = idx
+            nx.set_node_attributes(G, label_prop_dict, 'modularity_class_label_propagation')
+        except Exception as e:
+            print(f"Warning: Label propagation failed for {competition_name}: {e}")
+        
+        # 3. Greedy Modularity
+        try:
+            greedy_communities = community.greedy_modularity_communities(G_undirected, weight='weight', resolution=1.0)
+            greedy_dict = {}
+            for idx, comm in enumerate(greedy_communities):
+                for node in comm:
+                    greedy_dict[node] = idx
+            nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
+        except Exception as e:
+            print(f"Warning: Greedy modularity failed for {competition_name}: {e}")
+        return G
 
 
 def create_unified_network(match_files, teams_info, exclude_competitions=None):
@@ -194,7 +228,6 @@ def create_unified_network(match_files, teams_info, exclude_competitions=None):
         if competition_name in exclude_competitions:
             continue
         
-        logger.debug(f"Processing {competition_name}")
         G.graph['competitions'].append(competition_name)
         
         matches = load_json_fixed(match_file)
@@ -297,30 +330,30 @@ def create_unified_network(match_files, teams_info, exclude_competitions=None):
 
 def main():
     """Generate all match-based networks"""
-    logger.info("Starting match network generation")
+    print("Starting match network generation")
     
     MATCH_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
     
-    logger.info("Loading team information")
+    print("Loading team information...")
     teams_info = load_teams_info(TEAMS_FILE)
     
     competitions = ['England', 'France', 'Germany', 'Italy', 'Spain', 'European_Championship', 'World_Cup']
     
-    logger.info(f"Generating individual networks for {len(competitions)} competitions")
+    print(f"Generating individual networks for {len(competitions)} competitions")
     
     for competition in competitions:
         matches_file = MATCHES_DIR / f'matches_{competition}.json'
         if not matches_file.exists():
-            logger.warning(f"{matches_file} not found, skipping")
+            print(f"Warning: {matches_file} not found, skipping")
             continue
         
-        logger.debug(f"Processing {competition}")
         G = create_match_network(matches_file, teams_info, competition)
         
         output_file = MATCH_NETWORKS_DIR / f'match_network_{competition}.gexf'
         nx.write_gexf(G, output_file)
+        print(f"  ✓ {competition}")
     
-    logger.info("Generating unified network (excluding World Cup)")
+    print("\nGenerating unified network (excluding World Cup)...")
     
     match_files = [MATCHES_DIR / f'matches_{comp}.json' for comp in competitions]
     match_files = [f for f in match_files if f.exists()]
@@ -330,7 +363,7 @@ def main():
     output_file = MATCH_NETWORKS_DIR / 'match_network_unified.gexf'
     nx.write_gexf(G_unified, output_file)
     
-    logger.info(f"Complete: {G_unified.number_of_nodes()} nodes, {G_unified.number_of_edges()} edges")
+    print(f"\nComplete: {G_unified.number_of_nodes()} nodes, {G_unified.number_of_edges()} edges")
 
 
 if __name__ == '__main__':

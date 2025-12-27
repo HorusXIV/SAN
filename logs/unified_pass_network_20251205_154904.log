@@ -1,7 +1,0 @@
-2025-12-05 15:49:04 - INFO - Starting unified pass network generation
-2025-12-05 15:49:04 - INFO - Loading reference data
-2025-12-05 15:49:04 - INFO - Processing 7 competitions
-2025-12-05 15:57:32 - INFO - Combined 1,290,268 passes from 7 competitions
-2025-12-05 15:57:35 - INFO - Network created: 3,028 nodes, 60,684 edges
-2025-12-05 15:57:38 - INFO - Network saved to F:\src_FHNW\Semester 3\san\data\Networks\passes\pass_network_unified.gexf
-2025-12-05 15:57:38 - INFO - Completed in 0:08:33.435196

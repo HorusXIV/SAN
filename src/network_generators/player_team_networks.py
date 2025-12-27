@@ -9,17 +9,14 @@ from pathlib import Path
 from collections import defaultdict
 from tqdm.auto import tqdm
 
-from src.common import load_json_fixed, setup_logger
+from src.common import load_json_fixed
 from src.config import (
     DATA_DIR,
-    LOG_DIR,
     EVENTS_DIR,
     PLAYER_TEAM_NETWORKS_DIR,
     PLAYERS_FILE,
     TEAMS_FILE
 )
-
-logger = setup_logger(__name__, log_dir=LOG_DIR, file_prefix='player_team_network')
 
 
 def extract_player_team_interactions(events, competition_name):
@@ -122,7 +119,7 @@ def process_competition(event_file, players_data, teams_data):
     interactions = extract_player_team_interactions(events, competition_name)
     
     if len(interactions) == 0:
-        logger.warning(f"No interactions found for {competition_name}")
+        print(f"Warning: No interactions found for {competition_name}")
         return None
     
     G = create_player_team_network(interactions, players_data, teams_data, competition_name)
@@ -132,16 +129,16 @@ def process_competition(event_file, players_data, teams_data):
 
 def main():
     """Main execution function."""
-    logger.info("Starting Player-Team Network Generation")
+    print("Starting Player-Team Network Generation")
     
     PLAYER_TEAM_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
     
     players = load_json_fixed(PLAYERS_FILE)
     teams = load_json_fixed(TEAMS_FILE)
-    logger.info(f"Loaded {len(players)} players, {len(teams)} teams")
+    print(f"Loaded {len(players)} players, {len(teams)} teams")
     
     event_files = sorted(list(EVENTS_DIR.glob("events_*.json")))
-    logger.info(f"Processing {len(event_files)} competitions")
+    print(f"Processing {len(event_files)} competitions\n")
     
     results = []
     for event_file in tqdm(event_files, desc="Generating networks"):
@@ -152,9 +149,9 @@ def main():
     for competition_name, G in results:
         output_file = PLAYER_TEAM_NETWORKS_DIR / f'player_team_network_{competition_name}.gexf'
         nx.write_gexf(G, output_file)
-        logger.info(f"{competition_name}: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+        print(f"{competition_name}: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
     
-    logger.info(f"Generated {len(results)} player-team networks")
+    print(f"\nGenerated {len(results)} player-team networks")
 
 
 if __name__ == "__main__":

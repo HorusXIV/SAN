@@ -10,17 +10,16 @@ import numpy as np
 import networkx as nx
 from typing import Dict, List, Tuple
 from datetime import datetime
+from networkx.algorithms import community
 
 from src.common import (
     load_json_fixed,
     extract_positions_vectorized,
     extract_start_positions_vectorized,
-    setup_logger,
     find_receivers_kdtree
 )
 from src.config import (
     DATA_DIR,
-    LOG_DIR,
     EVENTS_DIR,
     PASS_NETWORKS_DIR,
     PLAYERS_FILE,
@@ -31,13 +30,9 @@ from src.config import (
     TIME_THRESHOLD
 )
 
-logger = setup_logger(__name__, log_dir=LOG_DIR, file_prefix='unified_pass_network')
-
 
 def process_competition_events(events: List[dict], competition_name: str) -> Tuple[pd.DataFrame, Dict]:
     """Process events from a single competition."""
-    logger.debug(f"Processing {competition_name}")
-    
     df_events = pd.DataFrame(events)
     df_passes = df_events[df_events['eventId'] == PASS_EVENT_ID].copy()
     
@@ -249,17 +244,120 @@ def build_unified_network(pass_connections: pd.DataFrame, player_nodes: pd.DataF
             G.add_edge(s, t, **edge_attrs)
             edges_added += 1
     
+    # Add centrality metrics and k-core
+    if G.number_of_nodes() > 0 and G.number_of_edges() > 0:
+        print("Calculating centrality metrics...")
+        # Convert to undirected for centrality and community detection
+        G_undirected = G.to_undirected()
+        
+        # Calculate centrality metrics
+        try:
+            # Degree centrality
+            degree_centrality = nx.degree_centrality(G)
+            nx.set_node_attributes(G, degree_centrality, 'degree_centrality')
+            
+            # Degree (simple count)
+            degree = dict(G.degree())
+            nx.set_node_attributes(G, degree, 'degree')
+            
+            # Betweenness centrality (undirected for consistency)
+            print("  Calculating betweenness centrality (this may take a while)...")
+            betweenness = nx.betweenness_centrality(G_undirected, weight='weight')
+            nx.set_node_attributes(G, betweenness, 'betweenness_centrality')
+            
+            # Closeness centrality (undirected)
+            print("  Calculating closeness centrality...")
+            if nx.is_connected(G_undirected):
+                closeness = nx.closeness_centrality(G_undirected, distance='weight')
+            else:
+                # For disconnected graphs, use connected components
+                closeness = {}
+                for component in nx.connected_components(G_undirected):
+                    subgraph = G_undirected.subgraph(component)
+                    closeness.update(nx.closeness_centrality(subgraph, distance='weight'))
+            nx.set_node_attributes(G, closeness, 'closeness_centrality')
+            
+            # PageRank
+            print("  Calculating PageRank...")
+            pagerank = nx.pagerank(G, weight='weight')
+            nx.set_node_attributes(G, pagerank, 'pagerank')
+            
+            print("  Centrality metrics calculated")
+        except Exception as e:
+            print(f"Warning: Centrality calculation failed: {e}")
+        
+        # Calculate k-core numbers
+        try:
+            print("Calculating k-core numbers...")
+            kcore = nx.core_number(G_undirected)
+            nx.set_node_attributes(G, kcore, 'kcore_number')
+            print("  K-core numbers calculated")
+        except Exception as e:
+            print(f"Warning: K-core calculation failed: {e}")
+        
+        # Community detection (on largest connected component for efficiency)
+        print("Running community detection...")
+        try:
+            # Get largest connected component
+            largest_cc = max(nx.connected_components(G_undirected), key=len)
+            G_cc = G_undirected.subgraph(largest_cc).copy()
+            print(f"  Working with largest connected component: {len(largest_cc)} nodes")
+            
+            # 1. Louvain (greedy modularity communities)
+            print("  Louvain method...")
+            louvain_communities = community.greedy_modularity_communities(G_cc, weight='weight')
+            louvain_dict = {}
+            for idx, comm in enumerate(louvain_communities):
+                for node in comm:
+                    louvain_dict[node] = idx
+            nx.set_node_attributes(G, louvain_dict, 'modularity_class_louvain')
+            
+            # 2. Label Propagation
+            print("  Label propagation...")
+            label_prop_communities = community.label_propagation_communities(G_cc)
+            label_prop_dict = {}
+            for idx, comm in enumerate(label_prop_communities):
+                for node in comm:
+                    label_prop_dict[node] = idx
+            nx.set_node_attributes(G, label_prop_dict, 'modularity_class_label_propagation')
+            
+            # 3. Greedy Modularity
+            print("  Greedy modularity...")
+            greedy_communities = community.greedy_modularity_communities(G_cc, weight='weight', resolution=1.0)
+            greedy_dict = {}
+            for idx, comm in enumerate(greedy_communities):
+                for node in comm:
+                    greedy_dict[node] = idx
+            nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
+            
+            # 4. Girvan-Newman (only for smaller networks)
+            if len(G_cc.nodes()) < 1000:
+                print("  Girvan-Newman (this may take a while)...")
+                girvan_newman_gen = community.girvan_newman(G_cc)
+                first_level_communities = next(girvan_newman_gen)
+                girvan_dict = {}
+                for idx, comm in enumerate(first_level_communities):
+                    for node in comm:
+                        girvan_dict[node] = idx
+                nx.set_node_attributes(G, girvan_dict, 'modularity_class_girvan_newman')
+            else:
+                print(f"  Skipping Girvan-Newman (graph too large: {len(G_cc.nodes())} nodes)")
+            
+            print("  Community detection completed")
+        except Exception as e:
+            print(f"Warning: Community detection failed: {e}")
+    
     return G
 
 
 def main():
     """Main execution function."""
     start_time = datetime.now()
-    logger.info("Starting unified pass network generation")
+    print("Starting unified pass network generation")
     
     PASS_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
     
-    logger.info("Loading reference data")
+    print("Loading reference data...")
     players = load_json_fixed(PLAYERS_FILE)
     teams = load_json_fixed(TEAMS_FILE)
     
@@ -267,7 +365,7 @@ def main():
     df_teams = pd.DataFrame(teams)
     
     event_files = sorted(list(EVENTS_DIR.glob("events_*.json")))
-    logger.info(f"Processing {len(event_files)} competitions")
+    print(f"Processing {len(event_files)} competitions")
     
     all_passes_list = []
     competition_stats = {}
@@ -284,27 +382,30 @@ def main():
                 competition_stats[competition_name] = stats
                 
         except Exception as e:
-            logger.error(f"Error processing {competition_name}: {e}")
+            print(f"Error processing {competition_name}: {e}")
     
     if not all_passes_list:
-        logger.error("No valid pass data found")
+        print("Error: No valid pass data found")
         return
     
     all_passes = pd.concat(all_passes_list, ignore_index=True)
-    logger.info(f"Combined {len(all_passes):,} passes from {len(competition_stats)} competitions")
+    print(f"\nCombined {len(all_passes):,} passes from {len(competition_stats)} competitions")
     
+    print("Aggregating pass connections...")
     pass_connections = aggregate_pass_connections(all_passes)
+    print("Creating player nodes...")
     player_nodes = create_player_nodes(pass_connections, df_players, df_teams, all_passes)
+    print("Building network...")
     G = build_unified_network(pass_connections, player_nodes)
     
-    logger.info(f"Network created: {G.number_of_nodes():,} nodes, {G.number_of_edges():,} edges")
+    print(f"\nNetwork created: {G.number_of_nodes():,} nodes, {G.number_of_edges():,} edges")
     
     output_path = PASS_NETWORKS_DIR / 'pass_network_unified.gexf'
     nx.write_gexf(G, output_path)
-    logger.info(f"Network saved to {output_path}")
+    print(f"Network saved to {output_path}")
     
     duration = datetime.now() - start_time
-    logger.info(f"Completed in {duration}")
+    print(f"\nCompleted in {duration}")
 
 
 if __name__ == "__main__":

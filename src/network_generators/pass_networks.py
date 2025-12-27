@@ -18,12 +18,10 @@ from src.common import (
     load_json_fixed,
     extract_positions_vectorized,
     extract_start_positions_vectorized,
-    setup_logger,
     find_receivers_kdtree
 )
 from src.config import (
     DATA_DIR,
-    LOG_DIR,
     EVENTS_DIR,
     PASS_NETWORKS_DIR,
     PLAYERS_FILE,
@@ -34,8 +32,6 @@ from src.config import (
     TIME_THRESHOLD,
     MAX_WORKERS
 )
-
-logger = setup_logger(__name__, log_dir=LOG_DIR, file_prefix='pass_network')
 
 
 def check_accurate_vectorized(tags_series):
@@ -51,8 +47,6 @@ def check_accurate_vectorized(tags_series):
 
 def create_pass_network_optimized(events, df_players, df_teams, competition_name):
     """Optimized pass network creation with vectorized operations."""
-    logger.debug(f"Processing {competition_name}")
-    
     df_events = pd.DataFrame(events)
     df_passes = df_events[df_events['eventId'] == PASS_EVENT_ID].copy()
     
@@ -190,9 +184,52 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
     ]
     G.add_edges_from(edges)
     
+    # Add centrality metrics and k-core
+    if len(G.nodes()) > 0 and len(G.edges()) > 0:
+        # Convert to undirected for centrality and community detection
+        G_undirected = G.to_undirected()
+        
+        # Calculate centrality metrics
+        try:
+            # Degree centrality
+            degree_centrality = nx.degree_centrality(G)
+            nx.set_node_attributes(G, degree_centrality, 'degree_centrality')
+            
+            # Degree (simple count)
+            degree = dict(G.degree())
+            nx.set_node_attributes(G, degree, 'degree')
+            
+            # Betweenness centrality (undirected for consistency)
+            betweenness = nx.betweenness_centrality(G_undirected, weight='weight')
+            nx.set_node_attributes(G, betweenness, 'betweenness_centrality')
+            
+            # Closeness centrality (undirected)
+            if nx.is_connected(G_undirected):
+                closeness = nx.closeness_centrality(G_undirected, distance='weight')
+            else:
+                # For disconnected graphs, use connected components
+                closeness = {}
+                for component in nx.connected_components(G_undirected):
+                    subgraph = G_undirected.subgraph(component)
+                    closeness.update(nx.closeness_centrality(subgraph, distance='weight'))
+            nx.set_node_attributes(G, closeness, 'closeness_centrality')
+            
+            # PageRank
+            pagerank = nx.pagerank(G, weight='weight')
+            nx.set_node_attributes(G, pagerank, 'pagerank')
+        except Exception as e:
+            print(f"Warning: Centrality calculation failed for {competition_name}: {e}")
+        
+        # Calculate k-core numbers
+        try:
+            kcore = nx.core_number(G_undirected)
+            nx.set_node_attributes(G, kcore, 'kcore_number')
+        except Exception as e:
+            print(f"Warning: K-core calculation failed for {competition_name}: {e}")
+    
     # Add modularity class attributes using different community detection algorithms
     if len(G.nodes()) > 0 and len(G.edges()) > 0:
-        # Convert to undirected for community detection
+        # Use undirected version for community detection
         G_undirected = G.to_undirected()
         
         # 1. Louvain (greedy modularity communities)
@@ -204,7 +241,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     louvain_dict[node] = idx
             nx.set_node_attributes(G, louvain_dict, 'modularity_class_louvain')
         except Exception as e:
-            logger.warning(f"Louvain community detection failed for {competition_name}: {e}")
+            print(f"Warning: Louvain community detection failed for {competition_name}: {e}")
         
         # 2. Label Propagation
         try:
@@ -215,7 +252,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     label_prop_dict[node] = idx
             nx.set_node_attributes(G, label_prop_dict, 'modularity_class_label_propagation')
         except Exception as e:
-            logger.warning(f"Label propagation failed for {competition_name}: {e}")
+            print(f"Warning: Label propagation failed for {competition_name}: {e}")
         
         # 3. Greedy (same as Louvain, but with different resolution)
         try:
@@ -226,7 +263,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     greedy_dict[node] = idx
             nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
         except Exception as e:
-            logger.warning(f"Greedy modularity failed for {competition_name}: {e}")
+            print(f"Warning: Greedy modularity failed for {competition_name}: {e}")
         
         # 4. Girvan-Newman (computationally expensive, limit to smaller graphs)
         if len(G.nodes()) < 500:  # Only run on smaller graphs due to computational complexity
@@ -240,9 +277,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                         girvan_dict[node] = idx
                 nx.set_node_attributes(G, girvan_dict, 'modularity_class_girvan_newman')
             except Exception as e:
-                logger.warning(f"Girvan-Newman failed for {competition_name}: {e}")
-        else:
-            logger.info(f"Skipping Girvan-Newman for {competition_name} (graph too large: {len(G.nodes())} nodes)")
+                print(f"Warning: Girvan-Newman failed for {competition_name}: {e}")
     
     return G
 
@@ -273,16 +308,16 @@ def process_single_competition(args):
 def main():
     """Main function with parallel processing."""
     start_time = datetime.now()
-    logger.info(f"Starting pass network generation (using {MAX_WORKERS} workers)")
+    print(f"Starting pass network generation (using {MAX_WORKERS} workers)")
     
     PASS_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
     
-    logger.info("Loading reference data")
+    print("Loading reference data...")
     players = load_json_fixed(PLAYERS_FILE)
     teams = load_json_fixed(TEAMS_FILE)
     
     event_files = list(EVENTS_DIR.glob("events_*.json"))
-    logger.info(f"Processing {len(event_files)} competitions")
+    print(f"Processing {len(event_files)} competitions")
     
     args_list = [(ef, players, teams) for ef in event_files]
     
@@ -297,13 +332,13 @@ def main():
                 result = future.result()
                 results.append(result)
             except Exception as e:
-                logger.error(f"Future failed: {e}")
+                print(f"Error: Future failed: {e}")
     
     success_count = sum(1 for r in results if r[1] == 'success')
     fail_count = len(results) - success_count
     
     duration = datetime.now() - start_time
-    logger.info(f"Complete: {success_count} successful, {fail_count} failed in {duration}")
+    print(f"\nComplete: {success_count} successful, {fail_count} failed in {duration}")
 
 
 if __name__ == "__main__":
