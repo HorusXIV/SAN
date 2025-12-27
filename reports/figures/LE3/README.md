@@ -8,17 +8,17 @@ This directory should contain the following figures generated in GEPHI:
 Source file: `data/Networks/passes/pass_network_Germany.gexf`
 
 - **pass_network_full.png**: Complete pass network
-  - Layout: ForceAtlas2
+  - Layout: OpenOrd
   - Node size: by degree centrality
   - Node color: by team
   - Edge width: by pass_count
-  - Labels: top 20 nodes by degree
+  - Labels: top nodes by degree
 
-- **pass_network_filtered.png**: Filtered network (weight ≥ 10 passes)
+- **pass_network_filtered.png**: Filtered network (weight ≥ 25 passes)
   - Same styling as above
   - Shows backbone structure
 
-- **pass_network_kcore.png**: 10-core subgraph
+- **pass_network_kcore.png**: 20-core subgraph
   - Node color: by betweenness centrality
   - Highlights dense core
 
@@ -61,20 +61,3 @@ All figures should use:
 - **Format**: PNG with transparent background
 - **Dimensions**: ~2000x1500 pixels
 - **Font**: Arial or similar sans-serif, 12pt minimum
-
-## GEPHI Import Notes
-
-1. Open GEPHI
-2. File → Open → Select .gexf file
-3. Import report: Ensure all attributes are recognized
-4. Apply layout algorithm
-5. Configure appearance (nodes, edges, labels)
-6. Preview and export
-
-## Filtering in GEPHI
-
-For filtered networks (e.g., pass_network_filtered.png):
-1. Filters → Attributes → Range → weight
-2. Set minimum to 10
-3. Filter → Apply
-4. Generate layout on filtered network
