@@ -8,6 +8,7 @@ from tqdm.auto import tqdm
 import pandas as pd
 import numpy as np
 import networkx as nx
+from networkx.algorithms import community
 from typing import Optional
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -188,6 +189,60 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
         if row['passer_id'] in player_nodes.index and row['receiver_id'] in player_nodes.index
     ]
     G.add_edges_from(edges)
+    
+    # Add modularity class attributes using different community detection algorithms
+    if len(G.nodes()) > 0 and len(G.edges()) > 0:
+        # Convert to undirected for community detection
+        G_undirected = G.to_undirected()
+        
+        # 1. Louvain (greedy modularity communities)
+        try:
+            louvain_communities = community.greedy_modularity_communities(G_undirected, weight='weight')
+            louvain_dict = {}
+            for idx, comm in enumerate(louvain_communities):
+                for node in comm:
+                    louvain_dict[node] = idx
+            nx.set_node_attributes(G, louvain_dict, 'modularity_class_louvain')
+        except Exception as e:
+            logger.warning(f"Louvain community detection failed for {competition_name}: {e}")
+        
+        # 2. Label Propagation
+        try:
+            label_prop_communities = community.label_propagation_communities(G_undirected)
+            label_prop_dict = {}
+            for idx, comm in enumerate(label_prop_communities):
+                for node in comm:
+                    label_prop_dict[node] = idx
+            nx.set_node_attributes(G, label_prop_dict, 'modularity_class_label_propagation')
+        except Exception as e:
+            logger.warning(f"Label propagation failed for {competition_name}: {e}")
+        
+        # 3. Greedy (same as Louvain, but with different resolution)
+        try:
+            greedy_communities = community.greedy_modularity_communities(G_undirected, weight='weight', resolution=1.0)
+            greedy_dict = {}
+            for idx, comm in enumerate(greedy_communities):
+                for node in comm:
+                    greedy_dict[node] = idx
+            nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
+        except Exception as e:
+            logger.warning(f"Greedy modularity failed for {competition_name}: {e}")
+        
+        # 4. Girvan-Newman (computationally expensive, limit to smaller graphs)
+        if len(G.nodes()) < 500:  # Only run on smaller graphs due to computational complexity
+            try:
+                girvan_newman_gen = community.girvan_newman(G_undirected)
+                # Get the first level of communities (or could iterate for different levels)
+                first_level_communities = next(girvan_newman_gen)
+                girvan_dict = {}
+                for idx, comm in enumerate(first_level_communities):
+                    for node in comm:
+                        girvan_dict[node] = idx
+                nx.set_node_attributes(G, girvan_dict, 'modularity_class_girvan_newman')
+            except Exception as e:
+                logger.warning(f"Girvan-Newman failed for {competition_name}: {e}")
+        else:
+            logger.info(f"Skipping Girvan-Newman for {competition_name} (graph too large: {len(G.nodes())} nodes)")
     
     return G
 
