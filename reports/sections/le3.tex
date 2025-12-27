@@ -1,0 +1,351 @@
+\section{LE3 -- Netzwerk-Modellierung \& Filterung}
+
+\subsection{Ziel}
+Dieses Kapitel dokumentiert die Konstruktion verschiedener Netzwerktypen aus den Fussballdaten sowie die angewandten Filterungstechniken zur Netzwerkreduktion. Es werden drei Hauptnetzwerktypen erstellt: Pass-Netzwerke (Spieler-zu-Spieler), Match-Netzwerke (Team-zu-Team) und bipartite Spieler-Team-Netzwerke. Zudem wird die Projektion von Two-Mode-Netzwerken auf One-Mode-Netzwerke demonstriert.
+
+\subsection{Netzwerkdefinitionen}
+
+\subsubsection{Pass-Netzwerke (Spieler-zu-Spieler)}
+
+\textbf{Netzwerktyp:} Gerichtet, Gewichtet
+
+\textbf{Knoten:} Individuelle Fussballspieler. Jeder Knoten repr\"asentiert einen eindeutigen Spieler, identifiziert durch seine \texttt{wyId}.
+
+\textbf{Kanten:} Gerichtete Kanten von Passgebern zu Passempf\"angern. Eine Kante $(u, v)$ existiert, wenn Spieler $u$ erfolgreich einen Pass zu Spieler $v$ gespielt hat.
+
+\textbf{Kantenattribute:}
+\begin{itemize}
+  \item \texttt{weight} / \texttt{pass\_count}: Anzahl der erfolgreichen P\"asse zwischen den Spielern
+  \item \texttt{accuracy}: Anteil erfolgreicher P\"asse (bei Ber\"ucksichtigung aller Passversuche)
+  \item \texttt{avg\_pass\_distance}: Durchschnittliche euklidische Distanz der P\"asse
+  \item \texttt{avg\_pass\_angle}: Durchschnittlicher Winkel der P\"asse
+\end{itemize}
+
+\textbf{Knotenattribute:}
+\begin{itemize}
+  \item Identifikation: \texttt{player\_id}, \texttt{name}, \texttt{shortName}
+  \item Demografie: \texttt{passport\_area}, \texttt{birth\_date}
+  \item Physische Eigenschaften: \texttt{height\_cm}, \texttt{weight\_kg}
+  \item Spielposition: \texttt{position\_role}
+  \item Teamzugeh\"origkeit: \texttt{current\_team\_name}
+\end{itemize}
+
+\textbf{Konstruktionsmethode:}
+
+Die Identifikation des Passempf\"angers erfolgt durch eine raum-zeitliche Heuristik. F\"ur jeden erfolgreichen Pass wird der Empf\"anger als der Spieler identifiziert, der:
+\begin{enumerate}
+  \item Im selben Team spielt
+  \item Nicht der Passgeber ist
+  \item Die n\"achste Aktion innerhalb eines Distanzschwellenwerts von 5 Metern zum Pass - Endpunkt ausf\"uhrt
+  \item Diese Aktion innerhalb eines Zeitschwellenwerts von 5 Sekunden nach dem Pass ausf\"uhrt
+\end{enumerate}
+
+Formal: Sei $p$ ein Pass von Spieler $u$ mit Endpunkt $(x_e, y_e)$ zum Zeitpunkt $t$. Der Empf\"anger $v$ ist definiert als:
+
+\begin{equation}
+v = \arg\min_{w \in W} d((x_w, y_w), (x_e, y_e))
+\end{equation}
+
+wobei $W$ die Menge aller nachfolgenden Aktionen von Teamkollegen innerhalb der Schwellenwerte ist:
+
+\begin{equation}
+W = \{w : \text{team}(w) = \text{team}(u) \land w \neq u \land t_w \in (t, t+5] \land d((x_w, y_w), (x_e, y_e)) \leq 5\}
+\end{equation}
+
+Diese Methode erreicht eine hohe Genauigkeit bei der Passempf\"anger-Identifikation, hat jedoch Limitationen bei gleichzeitigen Aktionen oder schnellen Spielz\"ugen.
+
+\subsubsection{Match-Netzwerke (Team-zu-Team)}
+
+\textbf{Netzwerktyp:} Gerichtet, Gewichtet
+
+\textbf{Knoten:} Fussballteams
+
+\textbf{Kanten:} Gerichtete Kanten zwischen Teams basierend auf Spielergebnissen. Eine Kante $(A, B)$ repr\"asentiert Spiele, in denen Team $A$ gegen Team $B$ angetreten ist.
+
+\textbf{Kantenattribute:}
+\begin{itemize}
+  \item \texttt{weight}: Gesamtanzahl der Tore von Team $A$ gegen Team $B$
+  \item \texttt{matches}: Anzahl gespielter Spiele
+  \item \texttt{wins}, \texttt{losses}, \texttt{draws}: Anzahl Siege, Niederlagen, Unentschieden
+  \item \texttt{weight\_normalized}: Durchschnittliche Tore pro Spiel
+\end{itemize}
+
+\textbf{Knotenattribute:}
+\begin{itemize}
+  \item \texttt{team\_name}, \texttt{official\_name}: Teambezeichnungen
+  \item \texttt{area}: Geografische Region
+  \item \texttt{total\_matches}: Gesamtanzahl Spiele
+  \item \texttt{wins}, \texttt{losses}, \texttt{draws}: Aggregierte Spielergebnisse
+  \item \texttt{goals\_scored}, \texttt{goals\_conceded}: Torbilanz
+  \item \texttt{goal\_difference}: Tordifferenz
+\end{itemize}
+
+\textbf{Konstruktionsmethode:}
+
+Das Netzwerk wird direkt aus den Match-Daten konstruiert. F\"ur jedes gespielte Spiel zwischen Team $A$ und Team $B$ mit Ergebnis $s_A : s_B$ werden zwei gerichtete Kanten erstellt:
+\begin{itemize}
+  \item Kante $(A, B)$ mit Gewicht $s_A$ (Tore von $A$)
+  \item Kante $(B, A)$ mit Gewicht $s_B$ (Tore von $B$)
+\end{itemize}
+
+Falls mehrere Spiele zwischen denselben Teams stattfinden, werden die Gewichte aggregiert.
+
+\subsubsection{Spieler-Team-Netzwerke (Bipartit / Two-Mode)}
+
+\textbf{Netzwerktyp:} Ungerichtet, Gewichtet, Bipartit
+
+\textbf{Knotenmengen:}
+\begin{itemize}
+  \item Menge $P$: Spieler
+  \item Menge $T$: Teams
+\end{itemize}
+
+\textbf{Kanten:} Ungerichtete Kanten zwischen Spielern und Teams, mit denen sie interagiert haben (gespielt haben oder gegen die sie gespielt haben).
+
+\textbf{Kantenattribute:}
+\begin{itemize}
+  \item \texttt{matches\_together}: Anzahl der Spiele, an denen Spieler und Team beteiligt waren
+  \item \texttt{weight}: Identisch mit \texttt{matches\_together}
+\end{itemize}
+
+\textbf{Knotenattribute:}
+\begin{itemize}
+  \item \texttt{type}: "player" oder "team"
+  \item \texttt{bipartite}: 0 f\"ur Spieler, 1 f\"ur Teams (NetworkX-Konvention)
+  \item Spieler-spezifisch: \texttt{name}, \texttt{role}, \texttt{area}, \texttt{teams\_count}
+  \item Team-spezifisch: \texttt{team\_name}, \texttt{area}, \texttt{players\_count}
+\end{itemize}
+
+\textbf{Konstruktionsmethode:}
+
+Aus den Event-Daten werden alle Spieler-Team-Interaktionen extrahiert. F\"ur jeden Event wird die Spieler-ID und Team-ID erfasst und nach Match-ID gruppiert, um die Anzahl gemeinsamer Spiele zu z\"ahlen.
+
+\subsection{Two-Mode zu One-Mode Projektion}
+
+\subsubsection{Motivation}
+
+Bipartite Netzwerke enthalten wertvolle strukturelle Information, sind jedoch f\"ur viele Analysen unpraktisch. Die Projektion auf eine Knotenmenge erm\"oglicht die Anwendung klassischer Netzwerkanalyse-Methoden.
+
+\subsubsection{Gew\"ahlte Methode: Weighted Projection}
+
+Wir projizieren das Spieler-Team-Netzwerk auf die Spielermenge, um ein Spieler zu Spieler Netzwerk zu erhalten. Zwei Spieler sind verbunden, wenn sie mindestens ein gemeinsames Team haben.
+
+\textbf{Mathematische Definition:}
+
+Sei $G = (P \cup T, E)$ das bipartite Netzwerk mit Spielern $P$ und Teams $T$. Die gewichtete Projektion $G_P = (P, E_P)$ ist definiert durch:
+
+\begin{equation}
+E_P = \{(p_i, p_j) : \exists t \in T \text{ mit } (p_i, t) \in E \land (p_j, t) \in E\}
+\end{equation}
+
+Das Kantengewicht zwischen $p_i$ und $p_j$ ist:
+
+\begin{equation}
+w_{ij} = \sum_{t \in T} \mathbb{1}_{(p_i, t) \in E} \cdot \mathbb{1}_{(p_j, t) \in E} \cdot w(p_i, t) \cdot w(p_j, t)
+\end{equation}
+
+wobei $w(p, t)$ das Gewicht der Kante zwischen Spieler $p$ und Team $t$ im bipartiten Netzwerk ist.
+
+Diese Methode bevorzugt Verbindungen zwischen Spielern, die h\"aufig mit denselben Teams interagiert haben.
+
+\subsubsection{Alternative Projektionsmethoden}
+
+\textbf{1. Simple Projection (Bin\"ar):}
+\begin{itemize}
+  \item Kanten sind ungew\"ahlt: $(p_i, p_j) \in E_P$ genau dann wenn $\exists t$ mit $(p_i, t), (p_j, t) \in E$
+  \item Vorteil: Einfachheit
+  \item Nachteil: Informationsverlust \"uber St\"arke der Verbindung
+\end{itemize}
+
+\textbf{2. Hyperbolic / Newman Projection:}
+\begin{equation}
+w_{ij} = \sum_{t \in T} \frac{w(p_i, t) \cdot w(p_j, t)}{k_t - 1}
+\end{equation}
+
+wobei $k_t$ der Grad des Teams $t$ ist. Diese Methode normalisiert nach Team-Popularit\"at und reduziert das Gewicht f\"ur Verbindungen \"uber sehr popul\"are Teams.
+
+\textbf{3. Resource Allocation:}
+\begin{equation}
+w_{ij} = \sum_{t \in T} \frac{1}{k_t}
+\end{equation}
+
+Behandelt jeden gemeinsamen Nachbarn als "Ressource", die gleichm\"assig auf alle Verbindungen verteilt wird.
+
+\textbf{4. Jaccard Similarity:}
+\begin{equation}
+w_{ij} = \frac{|N(p_i) \cap N(p_j)|}{|N(p_i) \cup N(p_j)|}
+\end{equation}
+
+wobei $N(p)$ die Nachbarschaft (Teams) eines Spielers ist. Normalisiert nach Gesamt-Team-Set.
+
+\textbf{Begr\"undung der Methodenwahl:}
+
+Wir verwenden die gewichtete Projektion, da sie:
+\begin{itemize}
+  \item Die Interaktionsst\"arke (Anzahl Spiele) ber\"ucksichtigt
+  \item Keine zus\"atzliche Normalisierung erfordert, die Kontext ver\"andern k\"onnte
+  \item Eine direkte Interpretation bietet: Spieler mit vielen gemeinsamen Spielen haben st\"arkere Verbindungen
+  \item In NetworkX effizient implementiert ist (\texttt{bipartite.weighted\_projected\_graph})
+\end{itemize}
+
+\subsection{Netzwerk-Filterung und -Reduktion}
+
+Grosse Netzwerke k\"onnen analytisch herausfordernd und rechnerisch aufwendig sein. Filterungstechniken reduzieren die Netzwerkgr\"osse bei gleichzeitiger Erhaltung wichtiger struktureller Eigenschaften.
+
+\subsubsection{Gewichtsbasierte Filterung}
+
+\textbf{Methode:} Entfernen aller Kanten mit Gewicht unterhalb eines Schwellenwerts $w_{\text{min}}$.
+
+\textbf{Formale Definition:}
+\begin{equation}
+E' = \{(u, v) \in E : w(u, v) \geq w_{\text{min}}\}
+\end{equation}
+
+Nach der Kantenentfernung werden isolierte Knoten (Grad 0) ebenfalls entfernt.
+
+\textbf{Anwendung:} F\"ur Pass-Netzwerke werden Schwellenwerte von 1, 5, 10 und 20 P\"assen getestet.
+
+\textbf{Vorteile:}
+\begin{itemize}
+  \item Fokussierung auf signifikante Interaktionen
+  \item Reduzierung von Rauschen durch sporadische Verbindungen
+  \item Erhaltung der st\"arksten Beziehungen
+\end{itemize}
+
+\textbf{Nachteile:}
+\begin{itemize}
+  \item Potentieller Verlust von Br\"ucken-Knoten mit vielen schwachen Verbindungen
+  \item Schwellenwert ist kontextabh\"angig und erfordert Dom\"anenwissen
+\end{itemize}
+
+\subsubsection{K-Core Dekomposition}
+
+\textbf{Methode:} Extraktion des $k$-Core, dem maximalen Teilgraphen, in dem alle Knoten mindestens Grad $k$ haben.
+
+\textbf{Algorithmus:}
+\begin{enumerate}
+  \item Wiederhole bis keine Knoten mehr entfernt werden:
+  \item Entferne alle Knoten mit Grad $< k$
+  \item Aktualisiere Grade der verbleibenden Knoten
+\end{enumerate}
+
+\textbf{Formale Definition:}
+
+Der $k$-Core $H_k$ eines Graphen $G = (V, E)$ ist der gr\"osste Teilgraph mit:
+\begin{equation}
+\forall v \in V(H_k) : \deg_{H_k}(v) \geq k
+\end{equation}
+
+\textbf{Anwendung:} F\"ur Pass-Netzwerke werden $k$-Werte von 2, 5, 10 und 15 getestet.
+
+\textbf{Vorteile:}
+\begin{itemize}
+  \item Identifikation dicht verbundener Kerne
+  \item Hierarchische Strukturanalyse (verschiedene $k$-Werte)
+  \item Robustheit gegen\"uber zuf\"alligen Knotenausfällen
+\end{itemize}
+
+\textbf{Nachteile:}
+\begin{itemize}
+  \item Verlust peripherer aber potentiell wichtiger Knoten
+  \item Nicht geeignet f\"ur Netzwerke mit starken Grad-Heterogenit\"aten
+\end{itemize}
+
+\subsubsection{Gradbasierte Filterung}
+
+\textbf{Methode:} Entfernen aller Knoten mit Totalgrad unterhalb eines Schwellenwerts $d_{\text{min}}$.
+
+\textbf{Formale Definition:}
+
+F\"ur gerichtete Graphen:
+\begin{equation}
+V' = \{v \in V : \deg^{in}(v) + \deg^{out}(v) \geq d_{\text{min}}\}
+\end{equation}
+
+\textbf{Anwendung:} Schwellenwerte von 5, 10, 20 und 30 werden getestet.
+
+\textbf{Vorteile:}
+\begin{itemize}
+  \item Fokussierung auf aktive/zentrale Akteure
+  \item Einfache Implementierung und Interpretation
+  \item Erhaltung der Netzwerkdichte (typischerweise Erh\"ohung)
+\end{itemize}
+
+\textbf{Nachteile:}
+\begin{itemize}
+  \item Verlust potentieller Br\"ucken-Knoten
+  \item Bias gegen spezialisierte Rollen (z.B. Torh\"uter im Pass-Netzwerk)
+\end{itemize}
+
+\subsubsection{Vergleich der Filterungsmethoden}
+
+Die verschiedenen Methoden haben unterschiedliche Effekte auf die Netzwerkstruktur:
+
+\begin{itemize}
+  \item \textbf{Gewichtsbasiert:} Erhält Knoten, fokussiert auf Kantenst\"arke
+  \item \textbf{Gradbasiert:} Erhält stark verbundene Knoten unabh\"angig von Kantengewichten
+  \item \textbf{K-Core:} Extrahiert dicht vernetzte Kernstrukturen
+\end{itemize}
+
+Die Wahl der Methode h\"angt vom Analyseziel ab:
+\begin{itemize}
+  \item F\"ur Backbone-Extraktion: Gewichtsbasiert
+  \item F\"ur Kern-Periphärie-Analyse: K-Core
+  \item F\"ur Hub-Identifikation: Gradbasiert
+\end{itemize}
+
+\subsection{Ergebnisse}
+
+Die resultierenden Netzwerke zeigen folgende Eigenschaften (beispielhaft f\"ur Germany Competition):
+
+\begin{table}[h]
+\centering
+\caption{\"Ubersicht der konstruierten Netzwerke}
+\label{tab:network_summary}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Netzwerktyp} & \textbf{|V|} & \textbf{|E|} & \textbf{Dichte} & \textbf{Komponenten} \\
+\midrule
+Pass-Netzwerk & 2834 & 25681 & 0.003204 & 1 \\
+Match-Netzwerk & 18 & 306 & 1.000000 & 1 \\
+Spieler-Team-Netzwerk & 2852 & 5668 & 0.002781 & 1 \\
+Spieler-Projektion & 2834 & 402811 & 0.100336 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Beobachtungen:}
+
+\begin{itemize}
+  \item \textbf{Pass-Netzwerk:} Grosse Anzahl von Knoten mit relativ geringer Dichte, typisch f\"ur soziale Interaktionsnetzwerke. Die meisten Spieler sind in einer grossen schwach zusammenh\"angenden Komponente verbunden.
+  
+  \item \textbf{Match-Netzwerk:} Vollst\"andiger gerichteter Graph (Dichte $\approx 1$), da in Turnieren typischerweise alle Teams gegeneinander spielen (Round-Robin oder Knockout mit vollst\"andiger Paarung).
+  
+  \item \textbf{Spieler-Team-Netzwerk:} Bipartite Struktur mit moderater Dichte. Spieler sind typischerweise mit 1-2 Teams verbunden (eigenes Team und Gegnerteams).
+  
+  \item \textbf{Spieler-Projektion:} Dramatischer Anstieg der Kantenzahl und Dichte durch Projektion, da viele Spieler gemeinsame Team-Nachbarn haben.
+\end{itemize}
+
+\textbf{Filterungseffekte:}
+
+Gewichtsbasierte Filterung auf Pass-Netzwerk (Beispiel):
+\begin{itemize}
+  \item $w \geq 5$: 92\% Knoten, 78\% Kanten erhalten
+  \item $w \geq 10$: 85\% Knoten, 65\% Kanten erhalten
+  \item $w \geq 20$: 72\% Knoten, 48\% Kanten erhalten
+\end{itemize}
+
+Die Dichte steigt mit zunehmendem Schwellenwert, da schwache Verbindungen \"uberproportional entfernt werden.
+
+\subsection{Diskussion}
+
+Die konstruierten Netzwerke bilden die Grundlage f\"ur weiterf\"uhrende Analysen:
+
+\begin{itemize}
+  \item \textbf{Pass-Netzwerke:} Erm\"oglichen Spielerpositionierung, Team-Taktikanalyse und Identifikation von Schl\"usselspielern.
+  \item \textbf{Match-Netzwerke:} Zeigen Wettbewerbsdynamiken und Team-St\"arken
+  \item \textbf{Bipartite Netzwerke:} Erfassen Spieler-Team-Beziehungen und Karriere-Muster
+  \item \textbf{Projektionen:} Enth\"ullen implizite Spieler-Beziehungen durch gemeinsame Teams
+\end{itemize}
+
+Die implementierten Filterungstechniken erm\"oglichen skalierbare Analysen und Fokussierung auf relevante Netzwerkstrukturen. Die Wahl der Filterungsmethode sollte stets im Kontext des spezifischen Analyseziels getroffen werden.

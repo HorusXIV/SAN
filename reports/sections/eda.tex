@@ -1,0 +1,191 @@
+\section{Exploratory Data Analysis (EDA)}
+
+\subsection{Ziel und Kapitelrolle}
+Dieses Kapitel liefert den einmaligen Überblick über Datensatz, Vorverarbeitung und zentrale Verteilungen. Alle nachfolgenden Kapitel (z.\,B. Netzwerk-Modellierung, Filterung, Metriken) referenzieren diese Ergebnisse und verzichten bewusst darauf, den Datensatz erneut zu erklären. Ziel der EDA ist es, die Datenstruktur zu validieren, Kerndistributionen (Ereignisse, Pässe) zu charakterisieren und daraus belastbare Annahmen für die Netzwerk-Analysen abzuleiten.
+
+\subsection{Datenbasis und Aufbereitung}
+\begin{itemize}
+  \item \textbf{Datenquellen:} Die Rohdaten liegen als JSON-Dateien in \texttt{data/} vor (Wettbewerbe, Spiele, Ereignisse, Teams, Spieler) und umfassen mehrere Wettbewerbe.
+  \item \textbf{Robuster Import:} Unicode-Bereinigung und fehlerresistentes Einlesen (für grosse Event-Dateien ggf. Streaming). Fehlende Felder (z.\,B. Positionen) werden als \textit{NaN} geführt und in Auswertungen entsprechend behandelt.
+  \item \textbf{Feature Engineering:} Aus Event-Positionen werden Start-/Endpunkte extrahiert und einfache Distanzmasse für Pässe berechnet. Für Zeitreihen werden Events pro Minute aggregiert; beide Halbzeiten beginnen jeweils bei Minute 0.
+  \item \textbf{Ausschlüsse:} Ereignisse ohne ausreichende Positionsinformationen fliessen nicht in Distanzverteilungen ein.
+\end{itemize}
+
+\subsection{Wettbewerbe und Spiele}
+
+Der Datensatz umfasst mehrere europäische Top-Ligen sowie internationale Turniere. Abbildung~\ref{fig:matches_per_competition} zeigt die Verteilung der Spiele über die Wettbewerbe. Unterschiede in der Spielanzahl spiegeln Ligaformate (z.\,B. 38 Spieltage) und Turnierlängen wider.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/eda/matches_per_competition.png}
+  \caption{Anzahl der Spiele pro Wettbewerb. Die Daten decken sowohl Liga-Wettbewerbe (England, Spanien, Deutschland, etc.) als auch internationale Turniere (WM, EM) ab.}
+  \label{fig:matches_per_competition}
+\end{figure}
+
+Zur Veranschaulichung der Match-Metadaten zeigt Tabelle~\ref{tab:matches_sample} eine zufällige Stichprobe von 5 Spielen (\texttt{df.sample(5)} auf dem Match-DataFrame):
+
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{llll}
+
+\toprule
+label & date & venue & duration \\
+\midrule
+Huddersfield Town - Crystal Palace, 0 - 2 & March 17, 2018 at 4:00:00 PM GMT+1 & The John Smith's Stadium & Regular \\
+Manchester United - Crystal Palace, 4 - 0 & September 30, 2017 at 4:00:00 PM GMT+2 & Old Trafford & Regular \\
+Everton - Southampton, 1 - 1 & May 5, 2018 at 6:30:00 PM GMT+2 & Goodison Park & Regular \\
+Everton - Manchester United, 0 - 2 & January 1, 2018 at 6:30:00 PM GMT+1 & Goodison Park & Regular \\
+Stoke City - Liverpool, 0 - 3 & November 29, 2017 at 9:00:00 PM GMT+1 & Bet365 Stadium & Regular \\
+\bottomrule
+\end{tabular}
+\caption{Beispiele von 5 zufällig ausgewählten Spielen aus dem England-Datensatz mit Spielbezeichnung, Datum, Austragungsort und Spieldauer.}
+\label{tab:matches_sample}
+\end{table}
+
+\subsection{Ereignisse: Typen und zeitliche Muster}
+
+Die Event-Typen sind über IDs und Labels definiert; Tabelle~\ref{tab:event_types} dokumentiert diese Zuordnung und dient in späteren Kapiteln als Referenz für Filter und Aggregationen.
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrll}
+
+\toprule
+ & event & subevent & event\_label & subevent\_label \\
+\midrule
+0 & 1 & 10 & Duel & Air duel \\
+1 & 1 & 11 & Duel & Ground attacking duel \\
+2 & 1 & 12 & Duel & Ground defending duel \\
+3 & 1 & 13 & Duel & Ground loose ball duel \\
+4 & 2 & 20 & Foul & Foul \\
+5 & 2 & 21 & Foul & Hand foul \\
+6 & 2 & 22 & Foul & Late card foul \\
+7 & 2 & 23 & Foul & Out of game foul \\
+8 & 2 & 24 & Foul & Protest \\
+9 & 2 & 25 & Foul & Simulation \\
+10 & 2 & 26 & Foul & Time lost foul \\
+11 & 2 & 27 & Foul & Violent Foul \\
+12 & 3 & 30 & Free Kick & Corner \\
+13 & 3 & 31 & Free Kick & Free Kick \\
+14 & 3 & 32 & Free Kick & Free kick cross \\
+15 & 3 & 33 & Free Kick & Free kick shot \\
+16 & 3 & 34 & Free Kick & Goal kick \\
+17 & 3 & 35 & Free Kick & Penalty \\
+18 & 3 & 36 & Free Kick & Throw in \\
+19 & 4 & 40 & Goalkeeper leaving line & Goalkeeper leaving line \\
+20 & 5 & 50 & Interruption & Ball out of the field \\
+21 & 5 & 51 & Interruption & Whistle \\
+22 & 6 & 60 & Offside & Offside \\
+23 & 7 & 70 & Others on the ball & Acceleration \\
+24 & 7 & 71 & Others on the ball & Clearance \\
+25 & 7 & 72 & Others on the ball & Touch \\
+26 & 8 & 80 & Pass & Cross \\
+27 & 8 & 81 & Pass & Hand pass \\
+28 & 8 & 82 & Pass & Head pass \\
+29 & 8 & 83 & Pass & High pass \\
+30 & 8 & 84 & Pass & Launch \\
+31 & 8 & 85 & Pass & Simple pass \\
+32 & 8 & 86 & Pass & Smart pass \\
+33 & 9 & 90 & Save attempt & Reflexes \\
+34 & 9 & 91 & Save attempt & Save attempt \\
+35 & 10 & 100 & Shot & Shot \\
+\bottomrule
+\end{tabular}
+\caption{Vollständige Übersicht der Ereignistypen und Subtypen im Datensatz. Die Spalten geben die Event-ID und Subevent-ID sowie deren sprachliche Bezeichnung an.}
+\label{tab:event_types}
+\end{table}
+
+Die Analyse der Ereignistypen in Abbildung~\ref{fig:event_types_top15} zeigt erwartungsgemäss, dass Pässe die häufigste Aktion darstellen, gefolgt von Duellen und Ballkontakten. Diese Dominanz von Passereignissen motiviert den Schwerpunkt auf Passnetzwerken.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/eda/event_types_top15.png}
+  \caption{Top 15 Ereignistypen über alle Wettbewerbe. Pässe dominieren klar das Spielgeschehen.}
+  \label{fig:event_types_top15}
+\end{figure}
+
+Die zeitliche Verteilung der Ereignisse über den Spielverlauf (Abbildung~\ref{fig:events_per_minute}) zeigt erhöhte Aktivität zu Beginn beider Halbzeiten sowie einen Abfall gegen Ende der zweiten Halbzeit. Diese Muster sind für spätere, phasenbasierte Netzwerkvergleiche relevant (z.\,B. Anfangsphase vs. Schlussphase).
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/eda/events_per_minute.png}
+  \caption{Ereignisse pro Spielminute (kontinuierlich über beide Halbzeiten). Deutlich erkennbar sind erhöhte Aktivität zu Spielbeginn und der Rückgang in der Schlussphase.}
+  \label{fig:events_per_minute}
+\end{figure}
+
+\subsection{Pass-Analyse: Zentrale Akteure und räumliche Verteilung}
+
+Pässe bilden das Rückgrat der späteren Netzwerk-Analyse. Abbildung~\ref{fig:top_passers} identifiziert die aktivsten Passgeber. Diese Spieler sind Kandidaten für zentrale Knoten (hohe Degree- und Betweenness-Zentralität), da sie als Verteiler im Spielaufbau fungieren.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/eda/top_passers.png}
+  \caption{Top 15 Spieler nach Anzahl der Pässe. Diese Spieler sind später als zentrale Knoten in den Passnetzwerken zu erwarten.}
+  \label{fig:top_passers}
+\end{figure}
+
+Eine detaillierte räumliche Analyse der Pässe (Abbildung~\ref{fig:pass_distance_analysis}) liefert mehrere wichtige Erkenntnisse:
+\begin{itemize}
+  \item Die \textbf{Passlängenverteilung} (oben links) zeigt eine rechtssteile Verteilung mit Median bei ca. 15 Einheiten, was kurzen bis mittellangen Pässen entspricht. Lange Bälle sind seltener.
+  \item Die \textbf{Passlängen nach Typ} (oben rechts) verdeutlichen erwartbare Unterschiede: Lange Bälle und Flanken weisen deutlich grössere Distanzen auf als einfache Zuspiele.
+  \item Die \textbf{Heatmaps} (unten) für Pass-Ursprung und -Ziel zeigen die räumliche Konzentration: Viele Pässe starten und enden im Mittelfeld sowie in defensiven Bereichen, während Pässe im gegnerischen Strafraum seltener sind – ein Indikator für die Schwierigkeit, in gefährliche Zonen vorzudringen.
+\end{itemize}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/eda/pass_distance_analysis.png}
+  \caption{Umfassende Analyse der Passeigenschaften. \textbf{Oben links:} Verteilung der Passlängen mit Median-Markierung. \textbf{Oben rechts:} Median-Passlänge nach Passtyp (z.\,B. lange Bälle vs. kurze Zuspiels). \textbf{Unten:} Heatmaps für Pass-Ursprung (links) und Pass-Ziel (rechts), visualisiert auf normalisierten Spielfeldkoordinaten.}
+  \label{fig:pass_distance_analysis}
+\end{figure}
+
+Um die spätere Netzwerkkonstruktion zu illustrieren, zeigt Tabelle~\ref{tab:pass_network_sample} einen Ausschnitt aus einem berechneten Passnetzwerk eines Beispielspiels (Match-ID 2500004). Die Kanten sind Passverbindungen, gewichtet nach \textit{pass\_count}; zusätzlich ist die mittlere Passdistanz angegeben.
+
+\begin{table}[tbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrll}
+\toprule
+ & passer\_id & receiver\_id & pass\_count & avg\_distance & passer\_name & receiver\_name \\
+\midrule
+0 & 3324 & 8625.000000 & 1 & 4.123106 & Álvaro Morata & V. Moses \\
+1 & 3350 & 3324.000000 & 1 & 13.038405 & Fàbregas & Álvaro Morata \\
+2 & 3350 & 3360.000000 & 6 & 20.523277 & Fàbregas & Pedro \\
+3 & 3350 & 3429.000000 & 3 & 25.654240 & Fàbregas & T. Courtois \\
+4 & 3350 & 8032.000000 & 1 & 26.627054 & Fàbregas & Marcos Alonso \\
+5 & 3350 & 8495.000000 & 3 & 12.648930 & Fàbregas & D. Drinkwater \\
+6 & 3350 & 8625.000000 & 2 & 21.530491 & Fàbregas & V. Moses \\
+7 & 3350 & 14748.000000 & 3 & 9.815600 & Fàbregas & A. Rüdiger \\
+8 & 3350 & 25553.000000 & 9 & 18.920233 & Fàbregas & Azpilicueta \\
+9 & 3350 & 25707.000000 & 1 & 17.804494 & Fàbregas & E. Hazard \\
+\bottomrule
+\end{tabular}
+\caption{Ausschnitt eines Passnetzwerks: erste 10 Passverbindungen eines Beispielspiels (Match-ID 2500004) mit Anzahl der Pässe, mittlerer Distanz und Spielernamen.}
+\label{tab:pass_network_sample}
+\end{table}
+
+\subsection{Wettbewerbsvergleich}
+
+Die aggregierten Pass-Statistiken nach Wettbewerb (Abbildung~\ref{fig:competition_pass_stats}) ermöglichen einen direkten Vergleich der Spielstile: Volumen (Anzahl der Pässe), Genauigkeit (Erfolgsquote) und durchschnittliche Passlänge variieren zwischen den Ligen und Turnieren. Solche Unterschiede können auf taktische Präferenzen, Spieltempo oder die Qualität der Teams hindeuten und werden sich in den strukturellen Eigenschaften der daraus generierten Netzwerke widerspiegeln.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/eda/competition_pass_stats.png}
+  \caption{Pass-Statistiken nach Wettbewerb: Volumen, Genauigkeit und durchschnittliche Distanz. Unterschiede deuten auf verschiedene Spielstile und taktische Ansätze hin.}
+  \label{fig:competition_pass_stats}
+\end{figure}
+
+\subsection{Erste Hypothesen für die Netzwerk-Analyse}
+
+Basierend auf den EDA-Ergebnissen lassen sich folgende Hypothesen für die nachfolgenden Netzwerk-Analysen (Kapitel 4) formulieren:
+
+\begin{enumerate}
+  \item \textbf{Zentrale Knoten:} Die identifizierten Top-Passgeber werden hohe Degree-Zentralität und Betweenness-Zentralität aufweisen, da sie als Verteiler im Spielaufbau fungieren.
+  \item \textbf{Räumliche Cluster:} Die Heatmaps deuten auf räumliche Cluster hin (Abwehr, Mittelfeld, Angriff), die sich in Community-Strukturen der Netzwerke widerspiegeln könnten.
+  \item \textbf{Wettbewerbsspezifische Unterschiede:} Ligen mit höherer Pass-Genauigkeit und kürzeren Pässen könnten dichtere Netzwerke mit mehr reziproken Verbindungen aufweisen.
+  \item \textbf{Zeitliche Dynamik:} Die beobachteten Aktivitätsmuster über den Spielverlauf legen nahe, dass sich Netzwerkmetriken (z.\,B. Dichte, Zentralisierung) zwischen den Spielphasen unterscheiden.
+\end{enumerate}

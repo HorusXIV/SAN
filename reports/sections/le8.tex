@@ -1,0 +1,22 @@
+\section{LE8 -- Link Prediction}
+
+\subsection{Ziel}
+\textit{Welche Kanten sollen vorhergesagt werden (zeitlich oder als fehlende Links)?}
+
+\subsection{Features / Heuristiken}
+\begin{itemize}
+  \item Common Neighbors, Jaccard, Adamic--Adar
+  \item Preferential Attachment
+  \item Katz / Rooted PageRank
+  \item Einbettungen (z.B. node2vec) oder GNN (falls genutzt)
+\end{itemize}
+
+\subsection{Evaluation}
+\begin{itemize}
+  \item Train/Test Split (z.B. zeitbasiert), Negative Sampling
+  \item Metriken: AUC, Average Precision, Precision@k
+  \item Baselines und Ablations
+\end{itemize}
+
+\subsection{Ergebnisse}
+\textit{Vergleiche Methoden, diskutiere Fehlerf\"alle und praktische Aussagekraft.}
