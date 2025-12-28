@@ -1,8 +1,8 @@
 """
-Social Analytics Network (SAN) Package
+Social Analytics Network (SAN)
 ======================================
 Football match network analysis toolkit.
 """
 
-__version__ = "0.2.0"
-__author__ = "FHNW Semester 3 SAN"
+__version__ = "1.0.0"
+__author__ = "Lukas Breiter"

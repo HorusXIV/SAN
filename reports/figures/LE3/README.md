@@ -2,9 +2,8 @@
 
 This directory should contain the following figures generated in GEPHI:
 
-## Required Figures
 
-### 1. Pass Network Visualizations
+## 1. Pass Network Visualizations
 Source file: `data/Networks/passes/pass_network_Germany.gexf`
 
 - **pass_network_full.png**: Complete pass network
@@ -22,7 +21,7 @@ Source file: `data/Networks/passes/pass_network_Germany.gexf`
   - Node color: by betweenness centrality
   - Highlights dense core
 
-### 2. Match Network Visualizations
+## 2. Match Network Visualizations
 Source file: `data/Networks/matches/match_network_World_Cup.gexf`
 
 - **match_network_circular.png**: Circular layout
@@ -36,7 +35,7 @@ Source file: `data/Networks/matches/match_network_World_Cup.gexf`
   - Layout: Hierarchical (by goal_difference)
   - Shows tournament structure
 
-### 3. Bipartite Network Visualization
+## 3. Bipartite Network Visualization
 Source file: `data/Networks/player_team/player_team_network_Germany.gexf`
 
 - **bipartite_network.png**: Two-mode visualization
@@ -45,7 +44,7 @@ Source file: `data/Networks/player_team/player_team_network_Germany.gexf`
   - Node size: by connection count
   - Edge width: by matches_together
 
-### 4. Projection Network Visualization
+## 4. Projection Network Visualization
 Source: Export from LE3.ipynb (G_player_projection)
 
 - **player_projection_network.png**: Player-player projection
@@ -53,11 +52,3 @@ Source: Export from LE3.ipynb (G_player_projection)
   - Node size: by degree
   - Edge width: by weight
   - Community detection coloring
-
-## Export Settings
-
-All figures should use:
-- **Resolution**: 300 DPI minimum
-- **Format**: PNG with transparent background
-- **Dimensions**: ~2000x1500 pixels
-- **Font**: Arial or similar sans-serif, 12pt minimum
