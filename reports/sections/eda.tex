@@ -22,6 +22,15 @@ Der Datensatz umfasst mehrere europäische Top-Ligen sowie internationale Turnie
   \label{fig:matches_per_competition}
 \end{figure}
 
+Ergänzend zeigt Abbildung~\ref{fig:events_by_competition} die Anzahl der Ereignisse pro Wettbewerb. Erwartungsgemäss skaliert die Eventanzahl stark mit der Anzahl Spiele und der Granularität der Erfassung. Für die englische Liga ergeben sich in der vorliegenden Auswertung ca. 650{,}000 Events (ca. 1{,}710 Events pro Match), was eine robuste Basis für detaillierte Netzwerkanalysen darstellt.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/eda/events_by_competition.png}
+  \caption{Anzahl der Events pro Wettbewerb. \textbf{\#ToDO:} Die zugehörige Notebook-Ausgabe deutet darauf hin, dass in dieser Grafik aktuell nur England dargestellt ist; vor der finalen Interpretation ist zu prüfen, ob alle Wettbewerbe einbezogen wurden.}
+  \label{fig:events_by_competition}
+\end{figure}
+
 Zur Veranschaulichung der Match-Metadaten zeigt Tabelle~\ref{tab:matches_sample} eine zufällige Stichprobe von 5 Spielen (\texttt{df.sample(5)} auf dem Match-DataFrame):
 
 \begin{table}[tbp]
@@ -117,6 +126,24 @@ Die zeitliche Verteilung der Ereignisse über den Spielverlauf (Abbildung~\ref{f
   \label{fig:events_per_minute}
 \end{figure}
 
+Auf aggregierter Ebene ist die Datenabdeckung über die reguläre Spielzeit ausgeglichen: Abbildung~\ref{fig:events_by_period} zeigt nahezu identische Event-Zahlen in der ersten und zweiten Halbzeit (je ca. 320{,}000 Events). Das spricht gegen systematische Ausfälle in einer Spielhälfte und erhöht die Vergleichbarkeit phasenbasierter Analysen.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/eda/events_by_period.png}
+  \caption{Events nach Spielhälfte (1H vs. 2H). In der vorliegenden Auswertung sind beide Halbzeiten mit je ca. 320{,}000 Events nahezu gleich stark vertreten.}
+  \label{fig:events_by_period}
+\end{figure}
+
+Für Passereignisse zeigt sich jedoch ein leichter Halbzeiteffekt (Abbildung~\ref{fig:passes_by_period}): In der ersten Halbzeit werden mehr Pässe gespielt (170{,}614 vs. 158{,}043; +7.4\%), die Passgenauigkeit ist minimal höher (82.99\% vs. 82.06\%) und die durchschnittliche Passdistanz praktisch unverändert (24.69 vs. 24.54). Inhaltlich passt dies zu en wie Ermüdung, Spielstandmanagement oder erhöhtem Pressing in Halbzeit 2.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/eda/passes_by_period.png}
+  \caption{Passvolumen, Passgenauigkeit und durchschnittliche Passdistanz nach Halbzeit (1H/2H). In dieser Auswertung werden in Halbzeit 1 mehr Pässe gespielt (+7.4\%), bei sehr ähnlicher Genauigkeit und Distanz.}
+  \label{fig:passes_by_period}
+\end{figure}
+
 \subsection{Pass-Analyse: Zentrale Akteure und räumliche Verteilung}
 
 Pässe bilden das Rückgrat der späteren Netzwerk-Analyse. Abbildung~\ref{fig:top_passers} identifiziert die aktivsten Passgeber. Diese Spieler sind Kandidaten für zentrale Knoten (hohe Degree- und Betweenness-Zentralität), da sie als Verteiler im Spielaufbau fungieren.
@@ -126,6 +153,15 @@ Pässe bilden das Rückgrat der späteren Netzwerk-Analyse. Abbildung~\ref{fig:t
   \includegraphics[width=0.85\linewidth]{figures/eda/top_passers.png}
   \caption{Top 15 Spieler nach Anzahl der Pässe. Diese Spieler sind später als zentrale Knoten in den Passnetzwerken zu erwarten.}
   \label{fig:top_passers}
+\end{figure}
+
+Neben räumlichen Mustern ist die enstruktur nach Passtyp zentral für die Interpretation von Netzwerkkanten: Abbildung~\ref{fig:pass_types_analysis} zeigt, dass einfache Pässe den Grossteil des Volumens ausmachen (ca. 251{,}405; ca. 76\% aller Pässe) und zugleich eine sehr hohe Genauigkeit aufweisen (91.69\%). Risikoreichere e (Flanken, Smart Passes) treten seltener auf und haben deutlich niedrigere Erfolgsraten (z.\,B. Flanken ca. 30.71\%). Für die spätere Netzwerkanalyse bedeutet dies: Gewichte werden stark durch kurze, sichere Verbindungen dominiert, während wenige riskante Kanten eher spielentscheidende Situationen abbilden.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/eda/pass_types_analysis.png}
+  \caption{Passvolumen (links) und Passgenauigkeit (rechts) nach Passtyp (Top 12). einfache Pässe dominieren das Volumen bei hoher Genauigkeit; Flanken und Smart Passes sind seltener und deutlich ungenauer.}
+  \label{fig:pass_types_analysis}
 \end{figure}
 
 Eine detaillierte räumliche Analyse der Pässe (Abbildung~\ref{fig:pass_distance_analysis}) liefert mehrere wichtige Erkenntnisse:
@@ -140,6 +176,15 @@ Eine detaillierte räumliche Analyse der Pässe (Abbildung~\ref{fig:pass_distanc
   \includegraphics[width=\linewidth]{figures/eda/pass_distance_analysis.png}
   \caption{Umfassende Analyse der Passeigenschaften. \textbf{Oben links:} Verteilung der Passlängen mit Median-Markierung. \textbf{Oben rechts:} Median-Passlänge nach Passtyp (z.\,B. lange Bälle vs. kurze Zuspiels). \textbf{Unten:} Heatmaps für Pass-Ursprung (links) und Pass-Ziel (rechts), visualisiert auf normalisierten Spielfeldkoordinaten.}
   \label{fig:pass_distance_analysis}
+\end{figure}
+
+Als kompaktes Bindeglied zur Netzwerkanalyse illustriert Abbildung~\ref{fig:network_metrics_sample} die Rolleninterpretation einfacher Zentralitätskonzepte in einem Beispielspiel: Spieler oberhalb der Diagonalen erhalten mehr Pässe als sie spielen (Zielspieler), Spieler unterhalb verteilen mehr (Aufbauspieler), und Spieler nahe der Diagonalen sind ausgeglichen. Diese Intuition wird in LE5 bei der Interpretation von In-/Out-Degree und Brückenrollen (Betweenness) wieder aufgegriffen.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/eda/network_metrics_sample.png}
+  \caption{Beispielhafte Zentralitätsintuition in einem Sample-Match: (links) Top-10 Spieler nach Passvolumen (gespielt vs. empfangen), (rechts) Out-Degree vs. In-Degree mit Referenzlinie $y=x$ zur Rolleninterpretation.}
+  \label{fig:network_metrics_sample}
 \end{figure}
 
 Um die spätere Netzwerkkonstruktion zu illustrieren, zeigt Tabelle~\ref{tab:pass_network_sample} einen Ausschnitt aus einem berechneten Passnetzwerk eines Beispielspiels (Match-ID 2500004). Die Kanten sind Passverbindungen, gewichtet nach \textit{pass\_count}; zusätzlich ist die mittlere Passdistanz angegeben.
@@ -177,6 +222,15 @@ Die aggregierten Pass-Statistiken nach Wettbewerb (Abbildung~\ref{fig:competitio
   \includegraphics[width=\linewidth]{figures/eda/competition_pass_stats.png}
   \caption{Pass-Statistiken nach Wettbewerb: Volumen, Genauigkeit und durchschnittliche Distanz. Unterschiede deuten auf verschiedene Spielstile und taktische Ansätze hin.}
   \label{fig:competition_pass_stats}
+\end{figure}
+
+Auf Basis der vorliegenden Wettbewerbs-Auswertung liegt die Passgenauigkeit der englischen Liga bei ca. 82.5\% (Abbildung~\ref{fig:pass_accuracy_by_competition}), was im professionellen Fussball ein typischer Wert ist (etwa 4 von 5 Pässen kommen an). \textbf{\#ToDO:} Wie bei Abbildung~\ref{fig:events_by_competition} ist zu prüfen, ob die Grafik sämtliche Wettbewerbe abdeckt oder aktuell nur England visualisiert.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/eda/pass_accuracy_by_competition.png}
+  \caption{Passgenauigkeit nach Wettbewerb (in \%). In der vorliegenden Auswertung ist England mit ca. 82.5\% sichtbar; vor finaler Interpretation ist die Wettbewerbsabdeckung zu verifizieren.}
+  \label{fig:pass_accuracy_by_competition}
 \end{figure}
 
 \subsection{Erste Hypothesen für die Netzwerk-Analyse}

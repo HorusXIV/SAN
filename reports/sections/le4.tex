@@ -266,13 +266,34 @@ Die gefundenen Communities entsprechen teilweise den WM-Gruppen, aber mit Überl
 
 \subsection{Visualisierung}
 
-Für GEPHI wurden folgende Visualisierungen erstellt (siehe Abbildungen):
+Die Visualisierung dient hier primär zwei Zielen: (i) Qualitätsvergleich der Algorithmen anhand aggregierter Kennzahlen und (ii) anschauliche Prüfung, ob die Communities eine plausible sportliche Interpretation tragen.
 
-\begin{itemize}
-  \item \textbf{Abbildung \ref{fig:pass_communities_louvain}}: Pass-Netzwerk mit Louvain-Communities als Knotenfarben
-  \item \textbf{Abbildung \ref{fig:community_size_dist}}: Histogramme der Community-Grössenverteilungen für alle Algorithmen
-  \item \textbf{Abbildung \ref{fig:match_communities}}: Match-Netzwerk mit Community-Färbung
-\end{itemize}
+Abbildung~\ref{fig:pass_communities_algorithm_comparison} fasst die wichtigsten Vergleichsmetriken zusammen. Insbesondere sind die Modularitätswerte (0.879--0.886) und die Coverage (0.939--0.955) aussergewöhnlich hoch, was die erwartete Teamstruktur in Passnetzwerken widerspiegelt.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE4/pass_communities_algorithm_comparison.png}
+  \caption{Algorithmusvergleich auf dem Passnetzwerk (Deutschland, dokumentiert: 473 Knoten, 8{,}786 Kanten): Modularität, Anzahl Communities, Coverage und mittlere Community-Grösse. Louvain erzielt die höchste Modularität ($Q\approx 0.886$), Label Propagation erreicht die höchste Coverage, erzeugt aber eine deutlich grössere (möglicherweise verschmolzene) Community (Max-Grösse 51).}
+  \label{fig:pass_communities_algorithm_comparison}
+\end{figure}
+
+Die Grössenverteilungen der Communities (Abbildung~\ref{fig:community_size_dist}) zeigen zudem, dass die meisten Communities in einem realistischen Korridor von ca. 23--31 Spielern liegen. Ausreisser (z.B. sehr kleine Singleton-Community bei Girvan-Newman oder sehr grosse Community bei Label Propagation) sind wichtige Warnsignale für Über- bzw. Untersegmentierung.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/LE4/pass_communities_louvain.png}
+  \caption{Community-Grössenverteilungen für vier Algorithmen (Histogramme). Dokumentiert: Louvain und Greedy liefern sehr uniforme Grössen (Mean 25.7, Range 23--31), Label Propagation zeigt einen grossen Ausreisser (bis 51), Girvan-Newman produziert zusätzlich eine sehr kleine Community (Min 1). \textbf{\#ToDO:} Dateiname und Inhalt sind potenziell missverständlich (\texttt{pass\_communities\_louvain.*} wirkt wie Netzwerk-Plot, dokumentiert ist jedoch die Grössenverteilung).}
+  \label{fig:community_size_dist}
+\end{figure}
+
+Für das Matchnetzwerk (World Cup) liegt eine Louvain-Visualisierung vor (Abbildung~\ref{fig:match_communities_louvain}). Da die zugehörige \texttt{.txt}-Beschreibung eher generisch ist, sollte die finale Interpretation (z.B. Gruppenphase vs. K.O.-Phase) anhand der tatsächlich eingefärbten Teamgruppen im Plot überprüft werden.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE4/match_communities_louvain.png}
+  \caption{Louvain-Communities im Matchnetzwerk (World Cup). \textbf{\#ToDO:} Die dokumentierte Beschreibung enthält keine konkreten Teamlisten/Modularität; vor finaler Diskussion ist zu prüfen, ob die Communities primär Gruppenphase, K.O.-Verläufe oder andere Turnierartefakte widerspiegeln.}
+  \label{fig:match_communities_louvain}
+\end{figure}
 
 \subsection{Diskussion}
 
@@ -363,10 +384,10 @@ Wir analysieren das grösste Team im Pass-Netzwerk (Köln, 31 Spieler):
 
 \subsubsection{Ergebnisse}
 
-\textbf{Team Köln Pass-Netzwerk:}
+    \textbf{Team Köln Pass-Netzwerk:}
 \begin{itemize}
   \item Nodes: 31, Edges: 241, Durchschnittlicher Grad: 15.55
-  \item Communities gefunden: 4
+  \item Communities gefunden: 3--4
   \item Modularity: Q = 0.109 (deutlich niedriger als Inter-Team: 0.886)
 \end{itemize}
 
@@ -387,6 +408,8 @@ Community 4 & 3 & 0\% & 0\% & 66.7\% & 33.3\% \\
 \caption{Position Distribution in Köln Team Communities}
 \end{table}
 
+    \textbf{\#ToDO:} Die zugehörige Abbildungsdokumentation (Abbildung~\ref{fig:team_position_distribution}) berichtet 3 Communities mit Grössen (19, 8, 4) statt 4 Communities. Vor finaler Abgabe müssen Tabelle, Plot und zugrundeliegender Exportlauf konsolidiert werden.
+
 \textbf{Position Homogeneity:}
 \begin{itemize}
   \item Community 1: H = 0.134 (sehr heterogen: Mix aus Defensive/Mittelfeld)
@@ -395,10 +418,11 @@ Community 4 & 3 & 0\% & 0\% & 66.7\% & 33.3\% \\
   \item Community 4: H = 0.311 (mässig homogen: primär Offensive + Torwart)
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}[tbp]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/LE4/team_position_distribution.png}
-\caption{Position Distribution in Köln Communities}
+\includegraphics[width=0.9\textwidth]{figures/LE4/team_position_distribution.png}
+\caption{Positionsverteilung innerhalb der Köln-Communities (100\% gestapelt). Dokumentiert sind 3 Communities (19/8/4 Spieler): eine grosse gemischte Defensive/Mittelfeld-Community, eine defensivlastige Community und eine kleinere, offensiv geprägte Community mit Torwartanteil.}
+\label{fig:team_position_distribution}
 \end{figure}
 
 \subsubsection{Interpretation}

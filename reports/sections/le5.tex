@@ -134,23 +134,23 @@ Tabelle~\ref{tab:degree_stats} zeigt die Verteilungsstatistiken der Degree- und 
 \toprule
 \textbf{Metrik} & \textbf{Degree} & \textbf{Strength} \\
 \midrule
-Maximum & [aus Notebook] & [aus Notebook] \\
-Mittelwert & [aus Notebook] & [aus Notebook] \\
-Median & [aus Notebook] & [aus Notebook] \\
+Maximum & 47 & 1529 \\
+Mittelwert & 20.1 & 417.3 \\
+Median & 22 & 371 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Abbildung~\ref{fig:degree_dist} zeigt die Verteilung von Degree und Strength. Beide folgen einer typischen \textit{heavy-tailed} Verteilung: Die meisten Spieler haben wenige Verbindungen, während einige wenige sehr viele haben.
+Abbildung~\ref{fig:degree_dist} zeigt die Verteilung von Degree und Strength. Während der Degree im vorliegenden Netzwerk relativ kompakt um den Mittelwert liegt (Peak im Bereich 20--22), weist Strength eine deutlich rechtssteile Verteilung auf: Die Mehrheit der Spieler liegt bei niedriger gewichteter Aktivität, während wenige Akteure sehr hohe Passvolumina akkumulieren.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\textwidth]{figures/LE5/degree_distribution.png}
-  \caption{Degree- und Strength-Verteilung im Pass-Netzwerk}
+  \caption{Degree- und Strength-Verteilung im Pass-Netzwerk (Deutschland). Degree ist in dieser Auswertung relativ kompakt um den Mittelwert, Strength ist deutlich rechtssteil und hebt wenige High-Volume-Passer hervor.}
   \label{fig:degree_dist}
 \end{figure}
 
-Die Korrelation zwischen Degree und Strength ist sehr hoch ($r > 0.9$), was darauf hindeutet, dass Spieler mit vielen Verbindungen auch viele Pässe spielen.
+Die Beziehung zwischen Degree und Strength ist positiv, aber nicht perfekt: Spieler mit vielen Passpartnern akkumulieren typischerweise auch ein höheres Passvolumen, gleichzeitig kann Strength (z.B. durch wiederholtes Anspielen derselben Mitspieler) stark variieren. \textbf{\#ToDO:} Der exakte Korrelationswert ist im Kapiteltext nicht visualisiert; bei Bedarf kann er im Notebook als Pearson-$r$ ergänzt werden.
 
 \textbf{In-Degree vs. Out-Degree}: Im gerichteten Pass-Netzwerk zeigt sich:
 \begin{itemize}
@@ -169,7 +169,7 @@ Betweenness-Zentralität identifiziert Spieler, die als \textbf{Brücken} zwisch
   \label{fig:betweenness}
 \end{figure}
 
-Die Korrelation zwischen Degree und Betweenness ist moderat ($r \approx 0.5$--$0.7$), was bedeutet, dass nicht alle gut vernetzten Spieler auch Brückenfunktion haben.
+Die Korrelation zwischen Degree und Betweenness ist moderat (dokumentiert: $r = 0.338$), d.h. nicht alle gut vernetzten Spieler übernehmen automatisch eine Brückenfunktion.
 
 \textbf{Bridging Nodes}: Spieler mit hoher Betweenness aber relativ niedrigem Degree sind besonders interessant – sie verbinden verschiedene Gruppen ohne selbst extrem viele Verbindungen zu haben. Diese Spieler sind strategisch wichtig für den Spielfluss.
 
@@ -184,11 +184,11 @@ Abbildung~\ref{fig:centrality_corr} zeigt die Korrelationsmatrix aller Zentralit
   \label{fig:centrality_corr}
 \end{figure}
 
-\textbf{Beobachtungen}:
+	extbf{Beobachtungen}:
 \begin{itemize}
-  \item \textbf{Degree, Eigenvector und PageRank} korrelieren stark miteinander ($r > 0.8$): Sie identifizieren ähnliche Spieler als zentral
-  \item \textbf{Betweenness} korreliert schwächer mit den anderen Massen: Sie erfasst eine andere Dimension von Zentralität (Brückenfunktion)
-  \item \textbf{Closeness} korreliert mässig mit allen anderen Massen
+  \item \textbf{Closeness und PageRank} korrelieren stark (dokumentiert: $r = 0.729$) und erfassen eine ähnliche Erreichbarkeits-Dimension.
+  \item \textbf{Degree und PageRank} korrelieren moderat (dokumentiert: $r = 0.400$), Degree und Eigenvector ebenfalls moderat (dokumentiert: $r = 0.302$).
+  \item \textbf{Betweenness} korreliert insgesamt schwächer mit den übrigen Massen (z.B. Betweenness--PageRank: $r = 0.144$) und erfasst damit eine eigenständige Broker-Dimension.
 \end{itemize}
 
 Dies zeigt, dass verschiedene Zentralitätsmasse verschiedene Aspekte der Wichtigkeit erfassen.
@@ -202,23 +202,7 @@ Tabelle~\ref{tab:top_players} zeigt die Top-10 Spieler nach durchschnittlichem R
 \caption{Top-10 Spieler nach Gesamtzentralität (Pass-Netzwerk Deutschland)}
 \label{tab:top_players}
 \footnotesize
-% Diese Tabelle wird aus dem Notebook generiert: top_players_table.tex
-% Platzhalter für die tatsächlichen Daten
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{Spieler} & \textbf{Degree} & \textbf{Between.} & \textbf{Close.} & \textbf{PageRank} & \textbf{Core} & \textbf{Avg. Rank} \\
-\midrule
-284469 & 44 & 0.189000 & 0.241200 & 0.005000 & 18.000000 \\
-15129 & 27 & 0.009800 & 0.231700 & 0.007300 & 18.000000 \\
-14938 & 27 & 0.009300 & 0.231700 & 0.007400 & 18.000000 \\
-14917 & 27 & 0.009300 & 0.231700 & 0.006500 & 18.000000 \\
-14731 & 38 & 0.198800 & 0.257500 & 0.004500 & 18.000000 \\
-15775 & 26 & 0.009700 & 0.231500 & 0.008900 & 18.000000 \\
-16094 & 43 & 0.190900 & 0.232700 & 0.004600 & 20.000000 \\
-15191 & 27 & 0.009300 & 0.231700 & 0.006000 & 18.000000 \\
-25861 & 26 & 0.009000 & 0.231500 & 0.007800 & 18.000000 \\
-14778 & 26 & 0.183100 & 0.256800 & 0.007000 & 19.000000 \\\bottomrule
-\end{tabular}
+\input{figures/LE5/top_players_table.tex}
 \end{table}
 
 \subsection{k-Core Analyse}
@@ -235,7 +219,8 @@ Die k-Core-Zerlegung identifiziert hierarchische Struktur im Netzwerk. Abbildung
 \textbf{Interpretation}:
 \begin{itemize}
   \item Der \textbf{maximale Core} (höchster $k$-Wert) enthält die am dichtesten verbundene Gruppe von Spielern
-  \item Die starke Korrelation zwischen Core Number und Degree ($r > 0.9$) zeigt, dass Spieler mit vielen Verbindungen typischerweise in höheren Cores sind
+  \item Höhere Core-Nummern markieren Spieler, die in einem stabilen, dicht vernetzten Kern eingebettet sind (Backbone-Struktur)
+  \item \textbf{\#ToDO:} In der Abbildung ist eine eher schwache Korrelation zwischen Core Number und Degree dokumentiert (0.297). Eine direkte Neuberechnung auf dem ungerichteten Passnetzwerk kann deutlich höhere Werte ergeben; hier sollte geprüft werden, ob unterschiedliche Degree-Definitionen (gerichtet vs. ungerichtet, Kanten vs. Nachbarn) verwendet wurden.
   \item Spieler im höchsten Core bilden das \enquote{Backbone} des Pass-Netzwerks
 \end{itemize}
 

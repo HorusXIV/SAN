@@ -337,6 +337,71 @@ Gewichtsbasierte Filterung auf Pass-Netzwerk (Beispiel):
 
 Die Dichte steigt mit zunehmendem Schwellenwert, da schwache Verbindungen \"uberproportional entfernt werden.
 
+\subsection{Visualisierung und Plausibilisierung (GEPHI/Notebook)}
+
+Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden zentrale Netzwerke als Abbildungen exportiert. Die folgenden Figuren sind so beschrieben, wie sie in den zugehörigen \texttt{.txt}-Dateien dokumentiert sind.
+
+	extbf{Pass-Netzwerk (Deutschland):} Abbildung~\ref{fig:le3_pass_network_full} zeigt das vollständige Spieler-zu-Spieler-Passnetzwerk. In der dokumentierten Exportkonfiguration (OpenOrd-Layout) werden Knoten nach Grad skaliert und nach Team eingefärbt; Kantenbreiten kodieren die Passhäufigkeit. Die erwartete Team-Clusterung ist visuell unmittelbar erkennbar.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/LE3/pass_network_full.png}
+  \caption{Vollständiges Passnetzwerk (Deutschland) als gerichteter, gewichteter Graph. Dokumentierte Netzwerkeigenschaften im Export: 473 Knoten, 8{,}786 Kanten, Dichte 0.039354, 1 weakly connected component; OpenOrd-Layout, Knotengrösse nach Degree, Knotenfarbe nach Team, Kantenbreite nach \texttt{pass\_count}. \textbf{\#ToDO:} Die Kennzahlen in Tabelle~\ref{tab:network_summary} (|V|=2834) weichen deutlich ab; vor finaler Version ist zu klären, ob unterschiedliche Daten-Slices (z.B. Wettbewerb vs. gesamter Datensatz) oder Vorfilterungen verglichen werden.}
+  \label{fig:le3_pass_network_full}
+\end{figure}
+
+	extbf{Gewichtsbasierte Filterung:} Abbildung~\ref{fig:le3_pass_weight_filtering} quantifiziert die Reduktion des Passnetzwerks bei steigenden Gewichts-Schwellen. Auffällig ist, dass Kanten deutlich schneller verschwinden als Knoten: bei $w\geq 20$ bleiben ca. 76.7\% der Spieler, aber nur ca. 36.8\% der Kanten erhalten. Das spricht für viele einmalige bzw. seltene Passverbindungen und motiviert eine Backbone-Analyse.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/pass_network_filtered.png}
+  \caption{Effekt gewichtsbasierter Filterung im Passnetzwerk (Deutschland): Knotenanzahl, Kantenanzahl und Dichte als Funktion des Schwellenwerts $w$ (hier: 1, 5, 10, 20). Bei höheren Schwellen sinkt die Dichte monoton (starke Kanten sind insgesamt seltener), während ein Grossteil der Spieler über starke Verbindungen weiterhin angebunden bleibt. \textbf{\#ToDO:} Der Dateiname \texttt{pass\_network\_filtered.png} wird in der Figuren-README auch als Gephi-Backbone-Viz (z.B. $w\geq 25$) geführt; hier ist zu prüfen, ob die Abbildung tatsächlich die Filterkurven oder eine Netzwerkdarstellung zeigt.}
+  \label{fig:le3_pass_weight_filtering}
+\end{figure}
+
+	extbf{k-Core Dekomposition:} Abbildung~\ref{fig:le3_pass_kcore} zeigt die Entwicklung von Core-Grösse und -Dichte. Der maximale Core ist $k=20$; mit wachsendem $k$ steigt die Dichte, was die Kern-Peripherie-Struktur (dicht verbundener Kern) unterstreicht.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/pass_network_kcore.png}
+  \caption{k-Core-Analyse des Passnetzwerks (Deutschland). Dokumentiert sind u.a. ein maximaler Core $k=20$ sowie eine steigende Dichte in höheren Cores (z.B. 15-core: 395 Knoten, 7{,}783 Kanten, Dichte 0.050010). \textbf{\#ToDO:} In der README wird \texttt{pass\_network\_kcore.png} als Gephi-Visualisierung des 20-core beschrieben; die Datei sollte mit der Dokumentation abgeglichen werden.}
+  \label{fig:le3_pass_kcore}
+\end{figure}
+
+	extbf{Match-Netzwerk (World Cup):} Abbildung~\ref{fig:le3_match_circular} und Abbildung~\ref{fig:le3_match_hierarchical} visualisieren Team-zu-Team-Interaktionen. In der dokumentierten Darstellung kodiert die Knotengrösse die Anzahl Spiele (\texttt{total\_matches}) und die Knotenfarbe die Tordifferenz; Kantenbreiten entsprechen Toren bzw. aggregierten Resultaten. Das hierarchische Layout kann zudem Upsets als nach oben gerichtete Kanten hervorheben.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/LE3/match_network_circular.png}
+  \caption{Match-Netzwerk (World Cup) im Circular-Layout. Knotengrösse nach \texttt{total\_matches}, Knotenfarbe als Gradient nach \texttt{goal\_difference}, Kantenbreite nach Toren (\texttt{weight}).}
+  \label{fig:le3_match_circular}
+\end{figure}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/LE3/match_network_hierarchical.png}
+  \caption{Match-Netzwerk (World Cup) im hierarchischen Layout (nach Tordifferenz/Performance). Abwärts gerichtete Kanten entsprechen typischen Dominanzmustern; aufwärts gerichtete Kanten deuten auf Upsets hin.}
+  \label{fig:le3_match_hierarchical}
+\end{figure}
+
+	extbf{Bipartites Spieler-Team-Netzwerk:} Abbildung~\ref{fig:le3_bipartite} zeigt das Two-Mode-Netzwerk mit Spielern und Teams (Kanten = Match-Beteiligungen). Dies ist die Grundlage für Projektionen und Karriere-/Roster-Analysen.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/bipartite_network.png}
+  \caption{Bipartites Spieler-Team-Netzwerk (Deutschland): Spieler links, Teams rechts; Knotenfarbe nach Typ, Knotengrösse nach Verbindungszahl (\texttt{teams\_count} bzw. \texttt{players\_count}), Kantenbreite nach \texttt{matches\_together}. Dokumentierte Eigenschaften: 474 Knoten, 503 Kanten, Dichte 0.004502, 1 Komponente.}
+  \label{fig:le3_bipartite}
+\end{figure}
+
+	extbf{Projektion (Spieler-Spieler):} Die Projektion des bipartiten Netzes auf Spieler erzeugt viele implizite Beziehungen. Abbildung~\ref{fig:le3_player_projection_weights} zeigt, dass fast alle projizierten Kanten Gewicht 1 haben (gemeinsame Team-Verknüpfung), während Gewicht 2 selten ist. Das spricht für eine sehr breite, aber schwach gewichtete Beziehungsstruktur in der Projektion.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/LE3/player_projection_network.png}
+  \caption{Gewichtsverteilung in der Spieler-Spieler-Projektion (Deutschland). Dokumentiert: ca. 6{,}803 Kanten, Dichte 0.060686; Gewichte fast ausschliesslich 1 (geteiltes Team), Gewicht 2 sehr selten. \textbf{\#ToDO:} In Tabelle~\ref{tab:network_summary} wird für die Projektion eine deutlich höhere Kantenzahl berichtet; die Abgrenzung der Netzwerke/Datenslices ist zu prüfen.}
+  \label{fig:le3_player_projection_weights}
+\end{figure}
+
 \subsection{Diskussion}
 
 Die konstruierten Netzwerke bilden die Grundlage f\"ur weiterf\"uhrende Analysen:

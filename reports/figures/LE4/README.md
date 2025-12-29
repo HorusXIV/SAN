@@ -32,18 +32,4 @@ Source file: `data/Networks/matches/match_network_World_Cup.gexf`
 - Node size: By total_matches attribute
 - Node labels: Always show (team names)
 - Edge width: By weight (goals)
-- Edge color: Light, curved edges
-
-**match_communities_interpretation.png**: Annotated version
-- Same as above but with annotations
-- Label each community with interpretation (e.g., "Group A+B")
-- Highlight interesting cross-community edges
-
-
-### 3. Community Quality Metrics
-Create custom visualizations in GEPHI:
-
-**community_quality_heatmap.png**:
-- Matrix showing modularity for each algorithm
-- Color intensity = modularity value
-- Can be created in matplotlib or as table in GEPHI
+- Edge color: Light Grey, curved edges
