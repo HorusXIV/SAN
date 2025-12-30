@@ -27,6 +27,7 @@ MATCHES_DIR = DATA_DIR / 'matches'
 PASS_NETWORKS_DIR = NETWORKS_DIR / 'passes'
 MATCH_NETWORKS_DIR = NETWORKS_DIR / 'matches'
 PLAYER_TEAM_NETWORKS_DIR = NETWORKS_DIR / 'player_team'
+FIELD_NETWORKS_DIR = NETWORKS_DIR / 'field'
 
 
 # ============================================================================
