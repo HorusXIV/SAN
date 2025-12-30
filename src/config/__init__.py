@@ -10,6 +10,7 @@ from .settings import (
     PASS_NETWORKS_DIR,
     MATCH_NETWORKS_DIR,
     PLAYER_TEAM_NETWORKS_DIR,
+    FIELD_NETWORKS_DIR,
     
     # Files
     PLAYERS_FILE,
@@ -17,12 +18,17 @@ from .settings import (
     
     # Event IDs
     PASS_EVENT_ID,
+    SHOT_EVENT_ID,
+    FREE_KICK_EVENT_ID,
     ACCURATE_TAG_ID,
     
     # Parameters
     DISTANCE_THRESHOLD,
     TIME_THRESHOLD,
     MAX_WORKERS,
+    
+    # Competitions
+    COMPETITIONS,
     
     # Config classes
     LogConfig,
@@ -45,13 +51,17 @@ __all__ = [
     'PASS_NETWORKS_DIR',
     'MATCH_NETWORKS_DIR',
     'PLAYER_TEAM_NETWORKS_DIR',
+    'FIELD_NETWORKS_DIR',
     'PLAYERS_FILE',
     'TEAMS_FILE',
     'PASS_EVENT_ID',
+    'SHOT_EVENT_ID',
+    'FREE_KICK_EVENT_ID',
     'ACCURATE_TAG_ID',
     'DISTANCE_THRESHOLD',
     'TIME_THRESHOLD',
     'MAX_WORKERS',
+    'COMPETITIONS',
     'LogConfig',
     'ExportConfig',
     'ValidationConfig',

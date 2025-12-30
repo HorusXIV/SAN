@@ -341,7 +341,7 @@ Die Dichte steigt mit zunehmendem Schwellenwert, da schwache Verbindungen \"uber
 
 Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden zentrale Netzwerke als Abbildungen exportiert. Die folgenden Figuren sind so beschrieben, wie sie in den zugehörigen \texttt{.txt}-Dateien dokumentiert sind.
 
-	extbf{Pass-Netzwerk (Deutschland):} Abbildung~\ref{fig:le3_pass_network_full} zeigt das vollständige Spieler-zu-Spieler-Passnetzwerk. In der dokumentierten Exportkonfiguration (OpenOrd-Layout) werden Knoten nach Grad skaliert und nach Team eingefärbt; Kantenbreiten kodieren die Passhäufigkeit. Die erwartete Team-Clusterung ist visuell unmittelbar erkennbar.
+\textbf{Pass-Netzwerk (Deutschland):} Abbildung~\ref{fig:le3_pass_network_full} zeigt das vollständige Spieler-zu-Spieler Passnetzwerk. In der dokumentierten Exportkonfiguration (OpenOrd-Layout) werden Knoten nach Grad skaliert und nach Team eingefärbt; Kantenbreiten kodieren die Passhäufigkeit. Die erwartete Team-Clusterung ist visuell unmittelbar erkennbar.
 
 \begin{figure}[tbp]
   \centering
@@ -350,7 +350,7 @@ Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden z
   \label{fig:le3_pass_network_full}
 \end{figure}
 
-	extbf{Gewichtsbasierte Filterung:} Abbildung~\ref{fig:le3_pass_weight_filtering} quantifiziert die Reduktion des Passnetzwerks bei steigenden Gewichts-Schwellen. Auffällig ist, dass Kanten deutlich schneller verschwinden als Knoten: bei $w\geq 20$ bleiben ca. 76.7\% der Spieler, aber nur ca. 36.8\% der Kanten erhalten. Das spricht für viele einmalige bzw. seltene Passverbindungen und motiviert eine Backbone-Analyse.
+\textbf{Gewichtsbasierte Filterung:} Abbildung~\ref{fig:le3_pass_weight_filtering} quantifiziert die Reduktion des Passnetzwerks bei steigenden Gewichts-Schwellen. Auffällig ist, dass Kanten deutlich schneller verschwinden als Knoten: bei $w\geq 20$ bleiben ca. 76.7\% der Spieler, aber nur ca. 36.8\% der Kanten erhalten. Das spricht für viele einmalige bzw. seltene Passverbindungen und motiviert eine Backbone-Analyse.
 
 \begin{figure}[tbp]
   \centering
@@ -359,7 +359,7 @@ Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden z
   \label{fig:le3_pass_weight_filtering}
 \end{figure}
 
-	extbf{k-Core Dekomposition:} Abbildung~\ref{fig:le3_pass_kcore} zeigt die Entwicklung von Core-Grösse und -Dichte. Der maximale Core ist $k=20$; mit wachsendem $k$ steigt die Dichte, was die Kern-Peripherie-Struktur (dicht verbundener Kern) unterstreicht.
+\textbf{k-Core Dekomposition:} Abbildung~\ref{fig:le3_pass_kcore} zeigt die Entwicklung von Core-Grösse und -Dichte. Der maximale Core ist $k=20$; mit wachsendem $k$ steigt die Dichte, was die Kern-Peripherie-Struktur (dicht verbundener Kern) unterstreicht.
 
 \begin{figure}[tbp]
   \centering
@@ -368,7 +368,7 @@ Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden z
   \label{fig:le3_pass_kcore}
 \end{figure}
 
-	extbf{Match-Netzwerk (World Cup):} Abbildung~\ref{fig:le3_match_circular} und Abbildung~\ref{fig:le3_match_hierarchical} visualisieren Team-zu-Team-Interaktionen. In der dokumentierten Darstellung kodiert die Knotengrösse die Anzahl Spiele (\texttt{total\_matches}) und die Knotenfarbe die Tordifferenz; Kantenbreiten entsprechen Toren bzw. aggregierten Resultaten. Das hierarchische Layout kann zudem Upsets als nach oben gerichtete Kanten hervorheben.
+\textbf{Match-Netzwerk (World Cup):} Abbildung~\ref{fig:le3_match_circular} und Abbildung~\ref{fig:le3_match_hierarchical} visualisieren Team-zu-Team-Interaktionen. In der dokumentierten Darstellung kodiert die Knotengrösse die Anzahl Spiele (\texttt{total\_matches}) und die Knotenfarbe die Tordifferenz; Kantenbreiten entsprechen Toren bzw. aggregierten Resultaten. Das hierarchische Layout kann zudem Upsets als nach oben gerichtete Kanten hervorheben.
 
 \begin{figure}[tbp]
   \centering
@@ -380,11 +380,11 @@ Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden z
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=0.95\linewidth]{figures/LE3/match_network_hierarchical.png}
-  \caption{Match-Netzwerk (World Cup) im hierarchischen Layout (nach Tordifferenz/Performance). Abwärts gerichtete Kanten entsprechen typischen Dominanzmustern; aufwärts gerichtete Kanten deuten auf Upsets hin.}
+  \caption{Match-Netzwerk (World Cup) im hierarchischen Layout (nach Tordifferenz/Performance). Abwärts gerichtete Kanten entsprechen typischen Dominanzmustern; aufwärts gerichtete Kanten deuten auf Upsets hin.}
   \label{fig:le3_match_hierarchical}
 \end{figure}
 
-	extbf{Bipartites Spieler-Team-Netzwerk:} Abbildung~\ref{fig:le3_bipartite} zeigt das Two-Mode-Netzwerk mit Spielern und Teams (Kanten = Match-Beteiligungen). Dies ist die Grundlage für Projektionen und Karriere-/Roster-Analysen.
+\textbf{Bipartites Spieler-Team-Netzwerk:} Abbildung~\ref{fig:le3_bipartite} zeigt das Two-Mode-Netzwerk mit Spielern und Teams (Kanten = Match-Beteiligungen). Dies ist die Grundlage für Projektionen und Karriere-/Roster-Analysen.
 
 \begin{figure}[tbp]
   \centering
@@ -393,7 +393,7 @@ Zur Plausibilisierung der Modellierung und zur anschaulichen Diskussion wurden z
   \label{fig:le3_bipartite}
 \end{figure}
 
-	extbf{Projektion (Spieler-Spieler):} Die Projektion des bipartiten Netzes auf Spieler erzeugt viele implizite Beziehungen. Abbildung~\ref{fig:le3_player_projection_weights} zeigt, dass fast alle projizierten Kanten Gewicht 1 haben (gemeinsame Team-Verknüpfung), während Gewicht 2 selten ist. Das spricht für eine sehr breite, aber schwach gewichtete Beziehungsstruktur in der Projektion.
+\textbf{Projektion (Spieler-Spieler):} Die Projektion des bipartiten Netzes auf Spieler erzeugt viele implizite Beziehungen. Abbildung~\ref{fig:le3_player_projection_weights} zeigt, dass fast alle projizierten Kanten Gewicht 1 haben (gemeinsame Team-Verknüpfung), während Gewicht 2 selten ist. Das spricht für eine sehr breite, aber schwach gewichtete Beziehungsstruktur in der Projektion.
 
 \begin{figure}[tbp]
   \centering
@@ -414,3 +414,137 @@ Die konstruierten Netzwerke bilden die Grundlage f\"ur weiterf\"uhrende Analysen
 \end{itemize}
 
 Die implementierten Filterungstechniken erm\"oglichen skalierbare Analysen und Fokussierung auf relevante Netzwerkstrukturen. Die Wahl der Filterungsmethode sollte stets im Kontext des spezifischen Analyseziels getroffen werden.
+
+\subsection{Feld-Lokationsnetzwerke}
+
+\subsubsection{Motivation und Konzept}
+
+Inspiriert von der Arbeit von \citet{inproceedings}, wurde ein zus\"atzlicher Netzwerktyp entwickelt: das \textbf{Feld-Lokationsnetzwerk} (Field Location Network). Dieses r\"aumliche Netzwerk modelliert das Spielgeschehen als Fluss von Ereignissen \"uber das Spielfeld hinweg.
+
+\textbf{Netzwerktyp:} Gerichtet, Multi-Edge
+
+\textbf{Knoten:} Feldbereiche, diskretisiert in ein regelm\"assiges Gitter (5$\times$5 Meter Zellen). Jeder Knoten repr\"asentiert eine spezifische r\"aumliche Zone auf dem Spielfeld, identifiziert durch seine Koordinaten \texttt{(x, y)}.
+
+\textbf{Kanten:} Gerichtete \"Uberg\"ange zwischen Feldlokationen. Eine Kante $(loc_1, loc_2)$ repr\"asentiert ein Ereignis (Pass, Schuss oder Freistoss), das von Lokation $loc_1$ nach $loc_2$ f\"uhrt. Da mehrere Ereignisse zwischen denselben Lokationen auftreten k\"onnen, ist das Netzwerk als Multi-Edge-Graph modelliert.
+
+\textbf{Erfasste Ereignistypen:}
+\begin{itemize}
+  \item \textbf{Pass} (Event-ID 8): Alle Passtypen (einfache P\"asse, hohe B\"alle, Flanken etc.)
+  \item \textbf{Schuss} (Event-ID 10): Torschu\"sse aller Art
+  \item \textbf{Freistoss} (Event-ID 3): Eckb\"alle, Freist\"osse, Elfmeter, Einw\"urfe
+\end{itemize}
+
+\textbf{Knotenattribute:}
+\begin{itemize}
+  \item R\"aumlich: \texttt{x}, \texttt{y} (Gitterzellen-Koordinaten), \texttt{center\_x}, \texttt{center\_y} (Zellenmitte)
+  \item Aktivit\"at: \texttt{total\_events} (Gesamtzahl Ereignisse), \texttt{unique\_players} (verschiedene Spieler), \texttt{unique\_teams} (verschiedene Teams)
+  \item Ereignisverteilung: \texttt{pass\_count}, \texttt{shot\_count}, \texttt{free\_kick\_count}
+  \item Charakteristik: \texttt{dominant\_event\_type} (h\"aufigster Ereignistyp an dieser Lokation)
+\end{itemize}
+
+\textbf{Kantenattribute:}
+\begin{itemize}
+  \item Ereignisinformation: \texttt{event\_type}, \texttt{sub\_event\_type}
+  \item Akteur: \texttt{player\_id}, \texttt{team\_id}
+  \item Kontext: \texttt{match\_id}, \texttt{match\_period}, \texttt{event\_sec}
+  \item R\"aumlich: \texttt{start\_x}, \texttt{start\_y}, \texttt{end\_x}, \texttt{end\_y}, \texttt{distance} (euklidische Distanz)
+\end{itemize}
+
+\subsubsection{Konstruktionsmethode}
+
+Die Feld-Lokationsnetzwerke werden durch r\"aumliche Diskretisierung konstruiert:
+
+\begin{enumerate}
+  \item \textbf{Gitterdiskretisierung:} Das Wyscout-Koordinatensystem (0--100 in beiden Dimensionen) wird in 5$\times$5 Meter Zellen aufgeteilt. Jede Zelle wird durch ihre untere linke Ecke identifiziert: $loc_x\_y$ mit $x, y \in \{0, 5, 10, \ldots, 100\}$.
+  
+  \item \textbf{Ereigniszuordnung:} F\"ur jedes relevante Ereignis (Pass, Schuss, Freistoss):
+  \begin{itemize}
+    \item Die Startposition wird der entsprechenden Gitterzelle zugeordnet
+    \item Falls das Ereignis eine Endposition besitzt (z.B.\ Passempf\"anger), wird auch diese zugeordnet
+    \item Eine gerichtete Kante wird von Start- zu Endlokation hinzugef\"ugt
+  \end{itemize}
+  
+  \item \textbf{Aggregation:} Knotenstatistiken (Ereignisz\"ahler, Spieleraktivit\"at) werden durch Z\"ahlen aller zugeordneten Ereignisse berechnet.
+\end{enumerate}
+
+\subsubsection{Netzwerkcharakteristiken}
+
+Tabelle~\ref{tab:field_network_stats} zeigt die Charakteristiken der Feld-Lokationsnetzwerke f\"ur verschiedene Wettbewerbe. Auffallend ist die hohe Dichte der Ligannetzwerke (1.5--2.0), was auf intensive r\"aumliche Verflechtung hindeutet. Die Turniernetzwerke (World Cup, EM) weisen erwartungsgem\"ass geringere Dichte auf, da weniger Spiele in die Analyse eingehen.
+
+\begin{table}[htbp]
+\centering
+\caption{Netzwerkstatistiken der Feld-Lokationsnetzwerke nach Wettbewerb}
+\label{tab:field_network_stats}
+\begin{tabular}{lrrrr}
+\toprule
+Wettbewerb & Knoten & Kanten & Dichte & Ereignisse/Lokation \\
+\midrule
+Italien & 441 & 384{,}110 & 1.980 & 1{,}742.0 \\
+England & 441 & 373{,}531 & 1.925 & 1{,}694.0 \\
+Frankreich & 441 & 366{,}425 & 1.888 & 1{,}661.8 \\
+Spanien & 441 & 364{,}773 & 1.880 & 1{,}654.3 \\
+Deutschland & 441 & 299{,}446 & 1.543 & 1{,}358.0 \\
+World Cup & 440 & 63{,}838 & 0.330 & 290.2 \\
+EM & 441 & 49{,}734 & 0.256 & 225.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{R\"aumliche Visualisierungen}
+
+\textbf{Ereignis-Heatmap:} Abbildung~\ref{fig:le3_field_heatmap} zeigt die r\"aumliche Verteilung der Ereignisse auf dem Spielfeld f\"ur die Weltmeisterschaft. Deutlich erkennbar sind:
+\begin{itemize}
+  \item \textbf{Extreme Hot Zones:} Die Koordinaten $(0,0)$ und $(100, 100)$ weisen mit \"uber 1{,}800 bzw.\ 1{,}600 Ereignissen die h\"ochste Aktivit\"at auf. Dies sind die Eckfahnen-Bereiche -- erwartbare Hotspots f\"ur Freist\"osse, Einw\"urfe und Eckb\"alle.
+  \item \textbf{Zentrales Mittelfeld:} Der Bereich um $(50, 50)$ zeigt erh\"ohte Aktivit\"at als Umschlagplatz des Spielgeschehens.
+  \item \textbf{Fl\"ugelbereiche:} Entlang der Seitenlinien zeigt sich intensive Aktivit\"at, was auf h\"aufige Flanken und Seitenverl\"angerungen hindeutet.
+  \item \textbf{Strafraum-Zonen:} Bereiche um die 16-Meter-R\"aume zeigen erh\"ohte Dichte, was Torchancen und Abwehraktionen widerspiegelt.
+\end{itemize}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/field_network_heatmap.png}
+  \caption{Feld-Lokationsnetzwerk als Heatmap (World Cup). Knotengr\"osse und -farbe kodieren die Ereignisintensit\"at. Feldbegrenzungen, Mittellinie, Mittelkreis und Strafr\"aume sind zur Orientierung eingezeichnet. Extremwerte an den Koordinaten $(0,0)$ und $(100, 100)$ entsprechen Eckfahnen-Bereichen.}
+  \label{fig:le3_field_heatmap}
+\end{figure}
+
+\textbf{Ereignistyp-Verteilung:} Abbildung~\ref{fig:le3_field_event_types} differenziert die r\"aumliche Verteilung nach Ereignistyp:
+\begin{itemize}
+  \item \textbf{P\"asse:} Gleichm\"assig \"uber das gesamte Feld verteilt, mit Schwerpunkt im Mittelfeld und Aufbaubereich. 439 von 440 Lokationen weisen Pass-Aktivit\"at auf.
+  \item \textbf{Schu\"sse:} Stark auf die beiden Strafr\"aume konzentriert (104 Lokationen). Besonders die Eckfahnen-Bereiche $(0,0)$ und $(100, 100)$ zeigen hohe Schussaktivit\"at, vermutlich bedingt durch die Datenkodierung von Torschu\"ssen nach Standardsituationen.
+  \item \textbf{Freist\"osse:} Breite Verteilung mit 428 aktiven Lokationen, aber Konzentration an den Seitenlinien (Einw\"urfe) und in der gegnerischen H\"alfte (Freist\"osse).
+\end{itemize}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/field_network_event_types.png}
+  \caption{R\"aumliche Verteilung der drei Ereignistypen (World Cup). Links: P\"asse (blau) zeigen gleichm\"assige Feldabdeckung. Mitte: Schu\"sse (rot) konzentrieren sich auf Strafraum-Zonen. Rechts: Freist\"osse (gr\"un) h\"aufen sich an Seitenlinien und in Tornähe.}
+  \label{fig:le3_field_event_types}
+\end{figure}
+
+\textbf{Flow-Netzwerk:} Abbildung~\ref{fig:le3_field_flow} visualisiert die 50 h\"aufigsten \"Uberg\"ange zwischen Feldlokationen. Diese Darstellung enth\"ullt dominante Spielmuster:
+\begin{itemize}
+  \item \textbf{Konterangriffe:} Starke Transitionen vom rechten Strafraum (90, 40--60) zur linken unteren Ecke $(0,0)$ deuten auf schnelle Gegenangriffe nach Ballverlust hin.
+  \item \textbf{R\"uckpass-Muster:} Viele \"Uberg\"ange f\"uhren zur\"uck ins eigene Drittel, was defensive Ballsicherung oder Spielaufbau widerspiegelt.
+  \item \textbf{Fl\"ugelspiel:} Deutliche Pfade entlang der Seitenlinien zeigen typische Aufw\"artsbewegungen \"uber die Fl\"ugel.
+\end{itemize}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE3/field_network_flow.png}
+  \caption{Flow-Netzwerk der 50 h\"aufigsten Ereignis\"uberg\"ange (World Cup). Pfeildicke und -intensit\"at repr\"asentieren die Transitionsh\"aufigkeit. Knotengr\"osse zeigt die lokale Ereignisdichte. Dominierende Pfade vom rechten Strafraum zur linken Ecke $(0,0)$ deuten auf h\"aufige Ballverlust- und Wiedererlangungs-Sequenzen hin.}
+  \label{fig:le3_field_flow}
+\end{figure}
+
+\subsubsection{Analytisches Potenzial}
+
+Die Feld-Lokationsnetzwerke erm\"oglichen neuartige Analysen:
+
+\begin{itemize}
+  \item \textbf{Taktische Raumnutzung:} Identifikation von \"uber- und untergenutzten Spielfeldbereichen
+  \item \textbf{Spielmuster-Erkennung:} Charakteristische Transitionen zwischen Zonen k\"onnen Spielstile offenlegen
+  \item \textbf{Hot-Zone-Analyse:} Identifikation von Schl\"usselbereichen f\"ur Torchancen oder Ballgewinne
+  \item \textbf{Gegner-Scouting:} Vergleich r\"aumlicher Aktivit\"atsmuster verschiedener Teams
+  \item \textbf{Standardsituationen:} Die Extremwerte an Eckfahnen-Positionen k\"onnen f\"ur Eckball- und Freistoss-Analysen genutzt werden
+\end{itemize}
+
+Die Kombination mit den bestehenden Pass- und Match-Netzwerken erm\"oglicht eine mehrdimensionale Betrachtung des Spielgeschehens: w\"ahrend Pass-Netzwerke die sozialen Interaktionen zwischen Spielern abbilden, erfassen Feld-Netzwerke die r\"aumliche Dynamik des Spiels.
