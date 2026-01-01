@@ -1,0 +1,116 @@
+\documentclass[final]{fhnwreport}         %[mode] = draft or final
+\input{fhnwheader}                        % loads all packages, definitions and settings
+
+%%%%% Logo: Hochschule HTU oder HSI, Sprache DE oder EN:
+% \newcommand{\logofilename}{FHNW_HTU_DE}
+% \newcommand{\logofilename}{FHNW_HTU_EN}
+\newcommand{\logofilename}{FHNW_HSI_DE}
+% \newcommand{\logofilename}{FHNW_HSI_EN}
+%%%%%
+
+% Optional (nur nötig, wenn du Overlays/Logos per TikZ einblendest)
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage[ngerman]{babel}
+
+%%%%% Bibliographie (APA oder IEEE):
+% \usepackage[style=ieee,urldate=comp,backend=biber]{biblatex}
+\usepackage[style=apa,urldate=comp,backend=biber]{biblatex}
+\addbibresource{literature/beispiel_bib.bib}
+
+\title{SAN (Soziale Netzwerk Analyse)\\Modulbericht}
+\author{Lukas Breiter \and Gian Marco Truttmann \and Jessica Schmid}
+\date{Windisch, \today}
+
+\sisetup{scientific-notation = true}
+
+\begin{document}
+
+\pagenumbering{roman}
+
+
+%%---TITLEPAGE---------------------------------------------------------------------------
+\selectlanguage{ngerman}
+\maketitle
+
+\vfill
+
+% Optional: Titelbild (Lege eine Datei "titleimage.png" ins Projektverzeichnis)
+\IfFileExists{titleimage.png}{%
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{titleimage.png}
+\end{figure}
+}{%
+\begin{center}\textit{(Optional: titleimage.png hinzuf\"ugen)}\end{center}
+}
+
+\vfill
+
+\begin{tabular}{@{}p{5cm} l}
+Modul                    & SAN (Soziale Netzwerk Analyse)\\[2ex]
+Autoren                  & Lukas Breiter\\
+                         & Gian Truttman\\
+                         & Jessica Schmied\\[2ex]
+Dozent/in                & Michael Henninger\\[2ex]
+Studiengang              & SG DSAI\\[2ex]
+Semester                 & HS 2025)\\[2ex]
+Version / Abgabedatum    & 0.1 / 04.01.2026\\[4ex]
+\multicolumn{2}{@{}l}{Fachhochschule Nordwestschweiz (FHNW)}
+\end{tabular}
+
+% Beispiel: Partnerlogo oben rechts (Datei "partnerlogo.png" hinzuf\"ugen)
+\IfFileExists{partnerlogo.png}{%
+\begin{tikzpicture}[remember picture,overlay,every node/.style={anchor=north east}]
+  \node at (current page.north east) [xshift=-1cm, yshift=-0.5cm] {\includegraphics[width=4cm]{partnerlogo.png}};
+\end{tikzpicture}
+}{}
+
+\clearpage
+
+%%---ABSTRACT----------------------------------------------------------------------------
+\selectlanguage{ngerman}
+\thispagestyle{empty}
+\include{sections/abstract}
+
+%%---TABLE OF CONTENTS-------------------------------------------------------------------
+\selectlanguage{ngerman}
+\tableofcontents
+\clearpage
+
+\listoffigures
+\listoftables
+
+%%---TEXT--------------------------------------------------------------------------------
+\pagenumbering{arabic}
+
+\include{sections/eda}
+\include{sections/le3}
+\include{sections/le4}
+\include{sections/le5}
+\include{sections/le6}
+\include{sections/le7}
+\include{sections/le8}
+\include{sections/le9}
+\include{sections/le10}
+
+% Optional (falls gew\"unscht)
+% \include{sections/schluss}
+
+%%---BIBLIOGRAPHY------------------------------------------------------------------------
+{\sloppypar
+\printbibliography[heading=bibintoc, title=Quellenverzeichnis]
+}
+
+%%---APPENDIX----------------------------------------------------------------------------
+\include{sections/eigenstaendigkeit}
+\selectlanguage{english}
+\include{sections/authenticity}
+\selectlanguage{ngerman}
+\include{sections/appendix}
+
+\end{document}

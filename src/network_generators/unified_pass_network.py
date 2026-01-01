@@ -26,22 +26,48 @@ from src.config import (
     TEAMS_FILE,
     PASS_EVENT_ID,
     ACCURATE_TAG_ID,
+    UNSUCCESSFUL_TAG_ID,
+    INTERCEPTION_TAG_ID,
     DISTANCE_THRESHOLD,
     TIME_THRESHOLD
 )
 
 
 def process_competition_events(events: List[dict], competition_name: str) -> Tuple[pd.DataFrame, Dict]:
-    """Process events from a single competition."""
+    """Process events from a single competition.
+    
+    Extracts pass events, classifies pass types, identifies receivers,
+    and returns network-ready data.
+    
+    Args:
+        events: List of event dictionaries
+        competition_name: Name of the competition
+        
+    Returns:
+        Tuple of (passes_dataframe, statistics_dict)
+            passes_dataframe: Cleaned passes with receiver information
+            statistics_dict: Pass counts by type
+    """
     df_events = pd.DataFrame(events)
     df_passes = df_events[df_events['eventId'] == PASS_EVENT_ID].copy()
     
     if len(df_passes) == 0:
         return pd.DataFrame(), {}
     
-    df_passes['accurate'] = df_passes['tags'].apply(
-        lambda x: any(tag['id'] == ACCURATE_TAG_ID for tag in x) if isinstance(x, list) else False
-    )
+    def classify_pass(tags):
+        if not isinstance(tags, list):
+            return 'unsuccessful'
+        
+        if any(tag.get('id') == INTERCEPTION_TAG_ID for tag in tags):
+            return 'intercepted'
+        elif any(tag.get('id') == ACCURATE_TAG_ID for tag in tags):
+            return 'successful'
+        elif any(tag.get('id') == UNSUCCESSFUL_TAG_ID for tag in tags):
+            return 'unsuccessful'
+        else:
+            return 'unsuccessful'
+    
+    df_passes['pass_type'] = df_passes['tags'].apply(classify_pass)
     
     position_data = extract_positions_vectorized(df_passes)
     df_passes = pd.concat([df_passes, position_data], axis=1)
@@ -59,22 +85,24 @@ def process_competition_events(events: List[dict], competition_name: str) -> Tup
     start_pos = extract_start_positions_vectorized(df_events)
     df_events[['start_x', 'start_y']] = start_pos
     
-    df_passes_accurate = df_passes_clean[df_passes_clean['accurate'] == True].copy()
+    df_passes_all = df_passes_clean.copy()
     
     df_events['eventSec'] = pd.to_numeric(df_events['eventSec'], errors='coerce')
-    df_passes_accurate['eventSec'] = pd.to_numeric(df_passes_accurate['eventSec'], errors='coerce')
+    df_passes_all['eventSec'] = pd.to_numeric(df_passes_all['eventSec'], errors='coerce')
     
-    df_passes_accurate['passer_id'] = df_passes_accurate['playerId']
-    df_passes_accurate['receiver_id'] = find_receivers_kdtree(
-        df_passes_accurate, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
+    df_passes_all['passer_id'] = df_passes_all['playerId']
+    df_passes_all['receiver_id'] = find_receivers_kdtree(
+        df_passes_all, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
     )
     
-    df_passes_network = df_passes_accurate.dropna(subset=['receiver_id']).copy()
+    df_passes_network = df_passes_all.dropna(subset=['receiver_id']).copy()
     df_passes_network['competition'] = competition_name
     
     stats = {
         'total_passes': len(df_passes),
-        'accurate_passes': len(df_passes_accurate),
+        'successful_passes': len(df_passes_all[df_passes_all['pass_type'] == 'successful']),
+        'unsuccessful_passes': len(df_passes_all[df_passes_all['pass_type'] == 'unsuccessful']),
+        'intercepted_passes': len(df_passes_all[df_passes_all['pass_type'] == 'intercepted']),
         'passes_with_receiver': len(df_passes_network),
     }
     
@@ -82,19 +110,27 @@ def process_competition_events(events: List[dict], competition_name: str) -> Tup
 
 
 def aggregate_pass_connections(all_passes: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate pass connections across all competitions."""
-    pass_connections = all_passes.groupby(['passer_id', 'receiver_id']).agg({
-        'accurate': 'mean',
+    """Aggregate pass connections across all competitions.
+    
+    Groups passes by passer, receiver, and pass_type, calculating
+    statistics for each unique connection.
+    
+    Args:
+        all_passes: DataFrame with passes from all competitions
+        
+    Returns:
+        DataFrame with aggregated pass connections and statistics
+    """
+    pass_connections = all_passes.groupby(['passer_id', 'receiver_id', 'pass_type']).agg({
         'pass_distance': 'mean',
         'pass_angle': 'mean',
         'competition': lambda x: list(x.unique())
     }).reset_index()
     
-    pass_connections['pass_count'] = all_passes.groupby(['passer_id', 'receiver_id']).size().values
+    pass_connections['pass_count'] = all_passes.groupby(['passer_id', 'receiver_id', 'pass_type']).size().values
     pass_connections['num_competitions'] = pass_connections['competition'].apply(len)
     
     pass_connections = pass_connections.rename(columns={
-        'accurate': 'accuracy',
         'pass_distance': 'avg_pass_distance',
         'pass_angle': 'avg_pass_angle',
         'competition': 'competitions_list'
@@ -105,7 +141,20 @@ def aggregate_pass_connections(all_passes: pd.DataFrame) -> pd.DataFrame:
 
 def create_player_nodes(pass_connections: pd.DataFrame, df_players: pd.DataFrame, 
                         df_teams: pd.DataFrame, all_passes: pd.DataFrame) -> pd.DataFrame:
-    """Create player nodes with enriched attributes."""
+    """Create player nodes with enriched attributes.
+    
+    Merges player information with pass statistics to create comprehensive
+    node attributes for the network.
+    
+    Args:
+        pass_connections: DataFrame with aggregated pass connections
+        df_players: DataFrame with player information
+        df_teams: DataFrame with team information
+        all_passes: DataFrame with all passes for statistics
+        
+    Returns:
+        DataFrame with player nodes and attributes (indexed by player_id)
+    """
     players_involved = set(pass_connections['passer_id']).union(set(pass_connections['receiver_id']))
     players_involved = {pid for pid in players_involved if pid > 0}
     
@@ -162,12 +211,19 @@ def create_player_nodes(pass_connections: pd.DataFrame, df_players: pd.DataFrame
     
     player_stats = all_passes.groupby('passer_id').agg({
         'pass_distance': ['mean', 'std'],
-        'accurate': 'mean',
         'competition': lambda x: list(x.unique())
     })
-    player_stats.columns = ['avg_pass_distance', 'std_pass_distance', 'pass_accuracy', 'competitions_played']
+    player_stats.columns = ['avg_pass_distance', 'std_pass_distance', 'competitions_played']
     player_stats['num_competitions'] = player_stats['competitions_played'].apply(len)
     player_stats['total_passes_made'] = all_passes.groupby('passer_id').size()
+    
+    # Calculate pass accuracy per player
+    pass_type_stats = all_passes.groupby(['passer_id', 'pass_type']).size().unstack(fill_value=0)
+    if 'successful' in pass_type_stats.columns:
+        total_passes = pass_type_stats.sum(axis=1)
+        pass_type_stats['pass_accuracy'] = pass_type_stats['successful'] / total_passes
+    else:
+        pass_type_stats['pass_accuracy'] = 0.0
     
     receiver_stats = all_passes.groupby('receiver_id').agg({
         'pass_distance': 'mean'
@@ -177,6 +233,8 @@ def create_player_nodes(pass_connections: pd.DataFrame, df_players: pd.DataFrame
     
     player_nodes = player_nodes.merge(
         player_stats, left_on='player_id', right_index=True, how='left'
+    ).merge(
+        pass_type_stats[['pass_accuracy']], left_on='player_id', right_index=True, how='left', suffixes=('', '_passtype')
     ).merge(
         receiver_stats, left_on='player_id', right_index=True, how='left'
     )
@@ -211,7 +269,18 @@ def create_player_nodes(pass_connections: pd.DataFrame, df_players: pd.DataFrame
 
 
 def build_unified_network(pass_connections: pd.DataFrame, player_nodes: pd.DataFrame) -> nx.DiGraph:
-    """Build unified directed network graph."""
+    """Build unified directed network graph from pass connections.
+    
+    Creates a NetworkX DiGraph with players as nodes and pass connections
+    as edges. Includes centrality metrics and community detection.
+    
+    Args:
+        pass_connections: DataFrame with aggregated pass connections
+        player_nodes: DataFrame with player node attributes
+        
+    Returns:
+        NetworkX DiGraph with players and pass connections
+    """
     G = nx.DiGraph()
     
     for pid, attrs in player_nodes.iterrows():
@@ -231,7 +300,7 @@ def build_unified_network(pass_connections: pd.DataFrame, player_nodes: pd.DataF
         if s in player_nodes.index and t in player_nodes.index:
             edge_attrs = {
                 'pass_count': int(row['pass_count']),
-                'accuracy': float(row['accuracy']),
+                'pass_type': str(row['pass_type']),
                 'avg_pass_distance': float(row['avg_pass_distance']),
                 'avg_pass_angle': float(row['avg_pass_angle']),
                 'num_competitions': int(row['num_competitions']),
@@ -351,7 +420,11 @@ def build_unified_network(pass_connections: pd.DataFrame, player_nodes: pd.DataF
 
 
 def main():
-    """Main execution function."""
+    """Main execution function for unified pass network generation.
+    
+    Processes all competitions, aggregates pass data, and creates a
+    comprehensive network combining all competitions.
+    """
     start_time = datetime.now()
     print("Starting unified pass network generation")
     

@@ -53,7 +53,9 @@ FREE_KICK_EVENT_ID = 3
 TACKLE_EVENT_ID = 4
 
 # Tag IDs
-ACCURATE_TAG_ID = 1801
+ACCURATE_TAG_ID = 1801  # Successful pass
+UNSUCCESSFUL_TAG_ID = 1802  # Unsuccessful pass
+INTERCEPTION_TAG_ID = 1401  # Pass intercepted
 ASSIST_TAG_ID = 301
 KEY_PASS_TAG_ID = 302
 THROUGH_BALL_TAG_ID = 1901
@@ -149,12 +151,26 @@ class ValidationConfig:
 # ============================================================================
 
 def get_competition_events_file(competition: str) -> Path:
-    """Get events file path for a competition."""
+    """Get events file path for a competition.
+    
+    Args:
+        competition: Competition name
+        
+    Returns:
+        Path to events JSON file
+    """
     return EVENTS_DIR / f"events_{competition}.json"
 
 
 def get_competition_matches_file(competition: str) -> Path:
-    """Get matches file path for a competition."""
+    """Get matches file path for a competition.
+    
+    Args:
+        competition: Competition name
+        
+    Returns:
+        Path to matches JSON file
+    """
     return MATCHES_DIR / f"matches_{competition}.json"
 
 
@@ -173,7 +189,11 @@ def ensure_directories():
 
 
 def get_settings_dict() -> Dict:
-    """Get all settings as a dictionary for logging/debugging."""
+    """Get all settings as a dictionary for logging/debugging.
+    
+    Returns:
+        Dictionary with key configuration settings
+    """
     return {
         'data_dir': str(DATA_DIR),
         'log_dir': str(LOG_DIR),

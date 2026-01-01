@@ -307,7 +307,11 @@ def process_competition(competition_name: str, output_dir: Path) -> None:
 
 
 def main():
-    """Main function to generate field networks for all competitions."""
+    """Main execution function for field network generation.
+    
+    Generates spatial field networks for all competitions showing
+    ball movement patterns across the field.
+    """
     print("="*70)
     print("FIELD NETWORK GENERATOR")
     print("="*70)

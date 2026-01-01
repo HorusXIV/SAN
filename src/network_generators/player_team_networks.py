@@ -5,13 +5,11 @@ Creates bipartite networks connecting players to teams they've played for or aga
 
 import networkx as nx
 import pandas as pd
-from pathlib import Path
 from collections import defaultdict
 from tqdm.auto import tqdm
 
 from src.common import load_json_fixed
 from src.config import (
-    DATA_DIR,
     EVENTS_DIR,
     PLAYER_TEAM_NETWORKS_DIR,
     PLAYERS_FILE,
@@ -20,7 +18,15 @@ from src.config import (
 
 
 def extract_player_team_interactions(events, competition_name):
-    """Extract player-team interactions from events."""
+    """Extract player-team interactions from events.
+    
+    Args:
+        events: List of event dictionaries
+        competition_name: Name of the competition
+        
+    Returns:
+        DataFrame with player_id, team_id, matches_together, competition
+    """
     df_events = pd.DataFrame(events)
     
     if 'playerId' not in df_events.columns or 'teamId' not in df_events.columns:
@@ -38,7 +44,17 @@ def extract_player_team_interactions(events, competition_name):
 
 
 def create_player_team_network(interactions_df, players_data, teams_data, competition_name):
-    """Create bipartite network of players and teams."""
+    """Create bipartite network connecting players and teams.
+    
+    Args:
+        interactions_df: DataFrame with player-team interactions
+        players_data: List of player dictionaries
+        teams_data: List of team dictionaries
+        competition_name: Name of the competition
+        
+    Returns:
+        NetworkX Graph (bipartite)
+    """
     G = nx.Graph()
     G.graph['competition'] = competition_name
     G.graph['graph_type'] = 'bipartite'
@@ -111,7 +127,16 @@ def create_player_team_network(interactions_df, players_data, teams_data, compet
 
 
 def process_competition(event_file, players_data, teams_data):
-    """Process a single competition's events."""
+    """Process a single competition's events.
+    
+    Args:
+        event_file: Path to events JSON file
+        players_data: List of player dictionaries
+        teams_data: List of team dictionaries
+        
+    Returns:
+        Tuple of (competition_name, NetworkX Graph) or None if no data
+    """
     competition_name = event_file.stem.replace('events_', '')
     
     events = load_json_fixed(event_file)
@@ -128,7 +153,11 @@ def process_competition(event_file, players_data, teams_data):
 
 
 def main():
-    """Main execution function."""
+    """Main execution function for player-team network generation.
+    
+    Generates bipartite networks for all competitions showing
+    player-team relationships.
+    """
     print("Starting Player-Team Network Generation")
     
     PLAYER_TEAM_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
