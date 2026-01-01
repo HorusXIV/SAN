@@ -96,12 +96,13 @@ def extract_end_location_from_event(event: dict) -> Optional[Tuple[float, float]
 
 
 def create_field_network(events: list, df_players: pd.DataFrame, 
-                        df_teams: pd.DataFrame, competition_name: str) -> nx.MultiDiGraph:
+                        df_teams: pd.DataFrame, competition_name: str) -> nx.DiGraph:
     """
-    Create a field network from events.
+    Create an aggregated field network from events.
     
     Nodes represent field locations (discretized into grid cells).
-    Edges represent event sequences between locations.
+    Edges represent aggregated event flows between locations, with separate
+    edges for each event type and weights representing event counts.
     
     Args:
         events: List of event dictionaries
@@ -110,9 +111,9 @@ def create_field_network(events: list, df_players: pd.DataFrame,
         competition_name: Name of the competition
         
     Returns:
-        NetworkX MultiDiGraph representing the field network
+        NetworkX DiGraph representing the aggregated field network
     """
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     
     # Filter for ball-contact events: Pass, Shot, Free Kick
     relevant_event_ids = [PASS_EVENT_ID, SHOT_EVENT_ID, FREE_KICK_EVENT_ID]
@@ -128,11 +129,9 @@ def create_field_network(events: list, df_players: pd.DataFrame,
     # Track node statistics
     node_event_counts = defaultdict(int)
     node_event_types = defaultdict(lambda: defaultdict(int))
-    node_player_counts = defaultdict(set)
-    node_team_counts = defaultdict(set)
     
-    # Process events to create edges
-    edge_data = []
+    # Track edges: (source, target, event_type) -> count
+    edge_aggregation = defaultdict(lambda: defaultdict(int))
     
     for idx, event in tqdm(df_filtered.iterrows(), total=len(df_filtered), 
                           desc="Building field network"):
@@ -154,10 +153,8 @@ def create_field_network(events: list, df_players: pd.DataFrame,
         # Update node statistics for start location
         node_event_counts[loc_id_start] += 1
         node_event_types[loc_id_start][event['eventName']] += 1
-        node_player_counts[loc_id_start].add(event['playerId'])
-        node_team_counts[loc_id_start].add(event['teamId'])
         
-        # If event has an end location, create edge
+        # If event has an end location, aggregate edge
         if end_loc is not None:
             x_end, y_end = end_loc
             if not (pd.isna(x_end) or pd.isna(y_end)):
@@ -168,22 +165,10 @@ def create_field_network(events: list, df_players: pd.DataFrame,
                 node_event_counts[loc_id_end] += 1
                 node_event_types[loc_id_end][event['eventName']] += 1
                 
-                # Create edge
-                edge_data.append({
-                    'source': loc_id_start,
-                    'target': loc_id_end,
-                    'event_type': event['eventName'],
-                    'sub_event_type': event.get('subEventName', ''),
-                    'player_id': event['playerId'],
-                    'team_id': event['teamId'],
-                    'match_id': event['matchId'],
-                    'match_period': event['matchPeriod'],
-                    'event_sec': event['eventSec'],
-                    'start_x': x_start,
-                    'start_y': y_start,
-                    'end_x': x_end,
-                    'end_y': y_end
-                })
+                # Aggregate edge by event type
+                edge_key = (loc_id_start, loc_id_end)
+                event_type = event['eventName']
+                edge_aggregation[edge_key][event_type] += 1
     
     # Add nodes with attributes
     print(f"Adding {len(node_event_counts)} location nodes...")
@@ -195,8 +180,6 @@ def create_field_network(events: list, df_players: pd.DataFrame,
         # Calculate node statistics
         total_events = node_event_counts[loc_id]
         event_type_dist = dict(node_event_types[loc_id])
-        unique_players = len(node_player_counts[loc_id])
-        unique_teams = len(node_team_counts[loc_id])
         
         # Dominant event type
         dominant_event = max(event_type_dist.items(), key=lambda x: x[1])[0] if event_type_dist else ''
@@ -208,44 +191,45 @@ def create_field_network(events: list, df_players: pd.DataFrame,
             center_x=x + GRID_SIZE / 2,  # Center of grid cell
             center_y=y + GRID_SIZE / 2,
             total_events=total_events,
-            unique_players=unique_players,
-            unique_teams=unique_teams,
             dominant_event_type=dominant_event,
             pass_count=event_type_dist.get('Pass', 0),
             shot_count=event_type_dist.get('Shot', 0),
-            free_kick_count=event_type_dist.get('Free Kick', 0),
-            event_type_distribution=str(event_type_dist)
+            free_kick_count=event_type_dist.get('Free Kick', 0)
         )
     
-    # Add edges
-    print(f"Adding {len(edge_data)} edges...")
-    for edge in tqdm(edge_data, desc="Adding edges"):
-        G.add_edge(
-            edge['source'],
-            edge['target'],
-            event_type=edge['event_type'],
-            sub_event_type=edge['sub_event_type'],
-            player_id=edge['player_id'],
-            team_id=edge['team_id'],
-            match_id=edge['match_id'],
-            match_period=edge['match_period'],
-            event_sec=edge['event_sec'],
-            start_x=edge['start_x'],
-            start_y=edge['start_y'],
-            end_x=edge['end_x'],
-            end_y=edge['end_y'],
-            distance=np.sqrt((edge['end_x'] - edge['start_x'])**2 + 
-                           (edge['end_y'] - edge['start_y'])**2)
-        )
+    # Add aggregated edges
+    total_edges = sum(len(event_types) for event_types in edge_aggregation.values())
+    print(f"Adding {total_edges} aggregated edges...")
+    
+    for (source, target), event_type_counts in tqdm(edge_aggregation.items(), 
+                                                      desc="Adding aggregated edges"):
+        # Create one edge for each event type between the same source-target pair
+        for event_type, count in event_type_counts.items():
+            # Calculate distance from grid cell centers
+            source_data = G.nodes[source]
+            target_data = G.nodes[target]
+            distance = np.sqrt((target_data['center_x'] - source_data['center_x'])**2 + 
+                             (target_data['center_y'] - source_data['center_y'])**2)
+            
+            # Create edge key that includes event type
+            G.add_edge(
+                source,
+                target,
+                key=event_type,  # Store event type as edge key for uniqueness
+                event_type=event_type,
+                weight=count,
+                distance=distance
+            )
     
     # Add graph metadata
     G.graph['competition'] = competition_name
-    G.graph['network_type'] = 'field_location'
+    G.graph['network_type'] = 'field_location_aggregated'
     G.graph['grid_size'] = GRID_SIZE
     G.graph['event_types'] = ['Pass', 'Shot', 'Free Kick']
+    G.graph['aggregated'] = True
     G.graph['created'] = datetime.now().isoformat()
     
-    print(f"Field network created: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+    print(f"Aggregated field network created: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
     
     return G
 
