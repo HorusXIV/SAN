@@ -1,10 +1,11 @@
 """Network generators package."""
 
-from . import field_networks
-from . import pass_networks
-from . import match_networks
-from . import player_team_networks
-from . import unified_pass_network
+# Modules can be imported individually when needed:
+# from . import field_networks
+# from . import pass_networks
+# from . import match_networks
+# from . import player_team_networks
+# from . import unified_pass_network
 
 __all__ = [
     'field_networks',

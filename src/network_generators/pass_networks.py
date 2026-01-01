@@ -28,32 +28,67 @@ from src.config import (
     TEAMS_FILE,
     PASS_EVENT_ID,
     ACCURATE_TAG_ID,
+    UNSUCCESSFUL_TAG_ID,
+    INTERCEPTION_TAG_ID,
     DISTANCE_THRESHOLD,
     TIME_THRESHOLD,
     MAX_WORKERS
 )
 
 
-def check_accurate_vectorized(tags_series):
-    """Vectorized accuracy check."""
-    def has_accurate_tag(tags):
-        if not isinstance(tags, list):
-            return False
-        return any(tag.get('id') == ACCURATE_TAG_ID for tag in tags)
+def classify_pass_type_vectorized(tags_series):
+    """Classify pass types based on event tags (vectorized).
     
-    return pd.Series([has_accurate_tag(tags) for tags in tags_series.values], 
+    Args:
+        tags_series: Pandas Series containing lists of tag dictionaries
+        
+    Returns:
+        Pandas Series with pass type classifications:
+            - 'successful': Pass reached teammate (tag 1801)
+            - 'unsuccessful': Pass failed (tag 1802)
+            - 'intercepted': Pass intercepted by opponent (tag 1401)
+    """
+    def classify_pass(tags):
+        if not isinstance(tags, list):
+            return 'unsuccessful'
+        
+        if any(tag.get('id') == INTERCEPTION_TAG_ID for tag in tags):
+            return 'intercepted'
+        elif any(tag.get('id') == ACCURATE_TAG_ID for tag in tags):
+            return 'successful'
+        elif any(tag.get('id') == UNSUCCESSFUL_TAG_ID for tag in tags):
+            return 'unsuccessful'
+        else:
+            return 'unsuccessful'
+    
+    return pd.Series([classify_pass(tags) for tags in tags_series.values], 
                      index=tags_series.index)
 
 
 def create_pass_network_optimized(events, df_players, df_teams, competition_name):
-    """Optimized pass network creation with vectorized operations."""
+    """Create pass network with optimized vectorized operations.
+    
+    Generates a directed network where:
+    - Nodes represent players with their attributes
+    - Edges represent pass connections (successful, unsuccessful, or intercepted)
+    - Edge attributes include pass_type, pass_count, avg_pass_distance, etc.
+    
+    Args:
+        events: List of event dictionaries
+        df_players: DataFrame with player information
+        df_teams: DataFrame with team information
+        competition_name: Name of the competition
+        
+    Returns:
+        NetworkX DiGraph or None if insufficient data
+    """
     df_events = pd.DataFrame(events)
     df_passes = df_events[df_events['eventId'] == PASS_EVENT_ID].copy()
     
     if len(df_passes) == 0:
         return None
     
-    df_passes['accurate'] = check_accurate_vectorized(df_passes['tags'])
+    df_passes['pass_type'] = classify_pass_type_vectorized(df_passes['tags'])
     
     position_data = extract_positions_vectorized(df_passes)
     df_passes = pd.concat([df_passes, position_data], axis=1)
@@ -71,29 +106,27 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
     start_pos = extract_start_positions_vectorized(df_events)
     df_events[['start_x', 'start_y']] = start_pos
     
-    df_passes_accurate = df_passes_clean[df_passes_clean['accurate'] == True].copy()
+    df_passes_all = df_passes_clean.copy()
     
     df_events['eventSec'] = pd.to_numeric(df_events['eventSec'], errors='coerce')
-    df_passes_accurate['eventSec'] = pd.to_numeric(df_passes_accurate['eventSec'], errors='coerce')
+    df_passes_all['eventSec'] = pd.to_numeric(df_passes_all['eventSec'], errors='coerce')
     
-    df_passes_accurate['passer_id'] = df_passes_accurate['playerId']
-    df_passes_accurate['receiver_id'] = find_receivers_kdtree(
-        df_passes_accurate, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
+    df_passes_all['passer_id'] = df_passes_all['playerId']
+    df_passes_all['receiver_id'] = find_receivers_kdtree(
+        df_passes_all, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
     )
     
-    df_passes_network = df_passes_accurate.dropna(subset=['receiver_id'])
+    df_passes_network = df_passes_all.dropna(subset=['receiver_id'])
     
     if len(df_passes_network) == 0:
         return None
     
-    pass_connections = df_passes_network.groupby(['passer_id', 'receiver_id']).agg({
-        'accurate': 'mean',
+    pass_connections = df_passes_network.groupby(['passer_id', 'receiver_id', 'pass_type']).agg({
         'pass_distance': 'mean',
         'pass_angle': 'mean'
     }).reset_index()
-    pass_connections['pass_count'] = df_passes_network.groupby(['passer_id', 'receiver_id']).size().values
+    pass_connections['pass_count'] = df_passes_network.groupby(['passer_id', 'receiver_id', 'pass_type']).size().values
     pass_connections.rename(columns={
-        'accurate': 'accuracy',
         'pass_distance': 'avg_pass_distance',
         'pass_angle': 'avg_pass_angle'
     }, inplace=True)
@@ -174,7 +207,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
     edges = [
         (int(row['passer_id']), int(row['receiver_id']), {
             'pass_count': int(row['pass_count']),
-            'accuracy': float(row['accuracy']),
+            'pass_type': str(row['pass_type']),
             'avg_pass_distance': float(row['avg_pass_distance']),
             'avg_pass_angle': float(row['avg_pass_angle']),
             'weight': int(row['pass_count'])
@@ -283,7 +316,16 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
 
 
 def process_single_competition(args):
-    """Worker function for parallel processing."""
+    """Worker function for parallel processing of competitions.
+    
+    Args:
+        args: Tuple of (event_file, players_data, teams_data)
+        
+    Returns:
+        Tuple of (competition_name, status, result)
+            status: 'success', 'no_data', or 'error'
+            result: output file path or error message
+    """
     event_file, players_data, teams_data = args
     competition_name = event_file.stem.replace('events_', '')
     
@@ -306,7 +348,11 @@ def process_single_competition(args):
 
 
 def main():
-    """Main function with parallel processing."""
+    """Main execution function with parallel processing.
+    
+    Generates pass networks for all competitions in the EVENTS_DIR.
+    Uses multiprocessing for optimal performance.
+    """
     start_time = datetime.now()
     print(f"Starting pass network generation (using {MAX_WORKERS} workers)")
     

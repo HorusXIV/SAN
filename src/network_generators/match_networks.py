@@ -4,13 +4,11 @@ Creates directed networks where nodes represent teams and edges represent matche
 """
 
 import networkx as nx
-from pathlib import Path
 from collections import defaultdict
 from networkx.algorithms import community
 
 from src.common import load_json_fixed
 from src.config import (
-    DATA_DIR,
     MATCHES_DIR,
     MATCH_NETWORKS_DIR,
     TEAMS_FILE
@@ -18,7 +16,14 @@ from src.config import (
 
 
 def load_teams_info(teams_file):
-    """Load team information from teams.json"""
+    """Load team information from teams.json.
+    
+    Args:
+        teams_file: Path to teams.json file
+        
+    Returns:
+        Dictionary mapping team IDs to team information
+    """
     teams_data = load_json_fixed(teams_file)
     
     teams_info = {}
@@ -33,7 +38,16 @@ def load_teams_info(teams_file):
 
 
 def create_match_network(matches_file, teams_info, competition_name):
-    """Create a directed network from match data."""
+    """Create a directed network from match data.
+    
+    Args:
+        matches_file: Path to matches JSON file
+        teams_info: Dictionary with team information
+        competition_name: Name of the competition
+        
+    Returns:
+        NetworkX DiGraph with teams as nodes and matches as edges
+    """
     matches = load_json_fixed(matches_file)
     
     G = nx.DiGraph()
@@ -190,11 +204,21 @@ def create_match_network(matches_file, teams_info, competition_name):
             nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
         except Exception as e:
             print(f"Warning: Greedy modularity failed for {competition_name}: {e}")
-        return G
+        
+    return G
 
 
 def create_unified_network(match_files, teams_info, exclude_competitions=None):
-    """Create a unified network from multiple match files."""
+    """Create a unified network from multiple match files.
+    
+    Args:
+        match_files: List of paths to match JSON files
+        teams_info: Dictionary with team information
+        exclude_competitions: List of competition names to exclude
+        
+    Returns:
+        NetworkX DiGraph combining all competitions
+    """
     if exclude_competitions is None:
         exclude_competitions = []
     
@@ -329,7 +353,11 @@ def create_unified_network(match_files, teams_info, exclude_competitions=None):
 
 
 def main():
-    """Generate all match-based networks"""
+    """Main execution function for match network generation.
+    
+    Generates directed networks where nodes are teams and edges represent
+    matches between them, for all competitions.
+    """
     print("Starting match network generation")
     
     MATCH_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
