@@ -21,6 +21,8 @@ from .settings import (
     SHOT_EVENT_ID,
     FREE_KICK_EVENT_ID,
     ACCURATE_TAG_ID,
+    UNSUCCESSFUL_TAG_ID,
+    INTERCEPTION_TAG_ID,
     
     # Parameters
     DISTANCE_THRESHOLD,
@@ -58,6 +60,8 @@ __all__ = [
     'SHOT_EVENT_ID',
     'FREE_KICK_EVENT_ID',
     'ACCURATE_TAG_ID',
+    'UNSUCCESSFUL_TAG_ID',
+    'INTERCEPTION_TAG_ID',
     'DISTANCE_THRESHOLD',
     'TIME_THRESHOLD',
     'MAX_WORKERS',
