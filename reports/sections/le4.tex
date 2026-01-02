@@ -1,196 +1,154 @@
-\section{LE4 -- Communities in Netzwerken entdecken}
+\section{LE4 -- Communities}
 
-\subsection{Ziel}
+In diesem Kapitel untersuchen wir, welche Untergruppen wir in unseren wyscouts Fussball Netzwerken identifizieren können. Wir beschränken uns auf Das Netzwerk für die Bundesliga sowie auf den Worldcup.\\
+Wir betrachten drei Aspekte: (1) \textbf{Connected Components} als grundlegende Zusammenhangsstruktur, (2) \textbf{Cliquen} als maximale vollständig vernetzte Gruppen und (3) \textbf{Community Detection} zur Identifikation von dichter verbundenen, aber nicht notwendigerweise vollständig vernetzten Gruppen. 
 
-Community Detection identifiziert dicht verbundene Gruppen von Knoten in Netzwerken. Im Kontext von Fussballnetzwerken suchen wir:
-
+Im Kontext von Fussball erwarten wir:
 \begin{itemize}
-  \item \textbf{Pass-Netzwerke}: Gruppen von Spielern mit intensiven Passbeziehungen (erwartungsgemäss: Teams)
-  \item \textbf{Match-Netzwerke}: Gruppen von Teams mit ähnlichen Wettbewerbsmustern (z.B. Turniergruppen, regionale Cluster)
-  \item \textbf{Strukturelle Validierung}: Prüfung, ob algorithmisch gefundene Communities mit realen Strukturen übereinstimmen
+  \item \textbf{Pass-Netzwerke}: Teams als Communities; Spielformationen als dichtere Substrukturen
+  \item \textbf{Match-Netzwerke}: Turniergruppen
+  \item \textbf{Feld-Netzwerke}: Cluster von 
 \end{itemize}
 
-Die Identifikation von Communities ermöglicht:
+\subsection{Connected Components}
+
+Connected Components beschreiben die grundlegende Zusammenhangsstruktur eines Netzwerks: Gruppen von Knoten, die über Pfade erreichbar sind, aber untereinander nicht verbunden sind.
+
+\paragraph{Pass-Netzwerk (Deutschland)}
+Das Pass-Netzwerk zeigt erwartungsgemäss starke Fragmentierung:
 \begin{itemize}
-  \item Kompression grosser Netzwerke durch Aggregation
-  \item Verständnis hierarchischer Organisationsstrukturen
-  \item Identifikation von Brückenknoten zwischen Communities
-  \item Analyse von Kohäsion und Separierung
+  \item \textbf{8 schwach verbundene Komponenten}: Die grösste enthält 473 Knoten (59.8\% des Netzwerks), die übrigen sind isolierte Spieler oder kleine Gruppen
+  \item \textbf{Interpretation}: Die grösste Komponente umfasst Spieler mit mindestens indirekten Passverbindungen. Isolierte Komponenten sind typischerweise Ersatzspieler mit minimalem Einsatz oder Fehler in der Passempfänger-Identifikation
 \end{itemize}
 
-\subsection{Methoden}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE4/pass_network_connected.png}
+  \caption{Connected Components im Pass-Netzwerk (Deutschland). Die grösste Komponente umfasst 473 Knoten (59.8\% des Netzwerks), die übrigen sind Teams ohne Transferspieler}
+  \label{fig:pass_network_connected}
+\end{figure}
 
-\subsubsection{Algorithmen}
+\paragraph{Match-Netzwerk (World Cup)}
+Match-Netzwerke sind aufgrund der Turnierstruktur verbunden:
+\begin{itemize}
+  \item \textbf{1 Komponente}: Alle 32 Teams sind über Pfade erreichbar
+  \item \textbf{Interpretation}: Das Turnier-Format (Gruppenphase + K.O.-Runden) garantiert einen zusammenhängenden Graphen; jedes Team spielt mindestens 3 Spiele
+\end{itemize}
 
-Wir implementieren vier etablierte Community-Detection-Algorithmen:
+\subsection{Cliquen und dichte Subgraphen}
+
+Cliquen sind maximale vollständig vernetzte Untergruppen: jeder Knoten ist mit jedem anderen direkt verbunden. Im Fussball sind echte Cliquen selten (nicht jeder Spieler passt zu jedem), daher betrachten wir auch relaxierte Varianten.
+
+\subsubsection{Maximale Cliquen}
+
+\paragraph{Pass-Netzwerk (Deutschland)}
+\textbf{Grösste Cliquen:} 4--5 Knoten (Spieler). Diese entsprechen typischerweise engen Passdreieck/-vierecken innerhalb eines Teams (z.B. Innenverteidiger + zentrales Mittelfeld).
+
+\textbf{Anzahl maximaler Cliquen:} Sehr hoch (Hunderte), da viele lokale, überlappende Passdreiecke existieren. Die meisten haben Grösse 3 (Dreiecke), einige wenige erreichen 4--5.
+
+\paragraph{Match-Netzwerk (World Cup)}
+\textbf{Grösste Cliquen:} Bis zu 4 Knoten (Teams). Dies entspricht vollständig vernetzten Vierergruppen in der WM-Vorrunde: jedes Team spielt gegen jedes andere in der Gruppe.
+
+\textbf{Interpretation:} Die Cliquen-Grösse 4 reflektiert direkt die Gruppenstruktur (4 Teams pro Gruppe). K.O.-Spiele erzeugen keine grösseren Cliquen, da nicht alle möglichen Paarungen gespielt werden.
+
+\subsubsection{k-Core Dekomposition}
+
+Der $k$-Core ist der maximale Subgraph, in dem jeder Knoten mindestens Grad $k$ hat. Diese Zerlegung identifiziert zunehmend dichter vernetzte "Kerne" im Netzwerk.
+
+\paragraph{Pass-Netzwerk (Deutschland, grösste Komponente)}
+\begin{itemize}
+  \item \textbf{Maximaler Core:} $k = 19$ (8 Knoten)
+  \item \textbf{Interpretation:} Diese 8 Spieler haben mindestens 19 Passbeziehungen innerhalb des Cores. Sie bilden den Kern eines sehr passintensiven Teams (vermutlich ein Top-Team mit hoher Ballbesitz-Taktik)
+  \item \textbf{Core-Verteilung:} Die meisten Spieler liegen in $k = 5$--$15$, was typischen Team-internen Passmustern entspricht
+\end{itemize}
+
+\paragraph{Match-Netzwerk (World Cup)}
+\begin{itemize}
+  \item \textbf{Maximaler Core:} $k = 10$ (mehrere Teams)
+  \item \textbf{Interpretation:} Teams mit mindestens 10 Match-Verbindungen sind solche, die weit im Turnier gekommen sind (Vorrunde + mehrere K.O.-Spiele)
+\end{itemize}
+
+\textbf{Vergleich zu Cliquen:} Während Cliquen vollständige Vernetzung fordern, erlaubt der $k$-Core Flexibilität: Knoten müssen nur mindestens $k$ Verbindungen haben, nicht zu allen anderen. Dadurch sind k-Cores deutlich grösser und praxisrelevanter für reale Netzwerke.
+
+\subsection{Community Detection}
+
+Community Detection identifiziert Gruppen mit hoher interner und niedriger externer Vernetzung. Anders als Cliquen müssen Communities nicht vollständig vernetzt sein. Wir vergleichen drei etablierte Algorithmen:
+
+\subsubsection{Algorithmen im Überblick}
 
 \paragraph{1. Louvain-Methode}
-
-Die Louvain-Methode \cite{blondel2008fast} ist ein gieriger Optimierungsalgorithmus, der Modularität maximiert. Der Algorithmus arbeitet in zwei Phasen:
-
-\textbf{Phase 1 - Lokale Optimierung:}
-Für jeden Knoten $i$ wird geprüft, ob ein Wechsel zu einer benachbarten Community die Modularität erhöht. Die Modularitätsänderung beim Verschieben von Knoten $i$ in Community $C$ ist:
-
-\begin{equation}
-\Delta Q = \left[\frac{\Sigma_{in} + k_{i,in}}{2m} - \left(\frac{\Sigma_{tot} + k_i}{2m}\right)^2\right] - \left[\frac{\Sigma_{in}}{2m} - \left(\frac{\Sigma_{tot}}{2m}\right)^2 - \left(\frac{k_i}{2m}\right)^2\right]
-\end{equation}
-
-wobei:
-\begin{itemize}
-  \item $\Sigma_{in}$ = Summe der Gewichte von Kanten innerhalb von $C$
-  \item $\Sigma_{tot}$ = Summe der Gewichte von Kanten zu Knoten in $C$
-  \item $k_i$ = Summe der Gewichte von Kanten zu Knoten $i$
-  \item $k_{i,in}$ = Summe der Gewichte von Kanten von $i$ zu Knoten in $C$
-  \item $m$ = Summe aller Kantengewichte im Netzwerk
-\end{itemize}
-
-\textbf{Phase 2 - Aggregation:}
-Alle Knoten derselben Community werden zu einem Super-Knoten aggregiert, und der Algorithmus wird rekursiv angewendet.
+Ein gieriger, hierarchischer Algorithmus, der \textbf{Modularität maximiert}. Er arbeitet in zwei Phasen: (1) lokale Optimierung (Knoten wechseln zu benachbarten Communities, wenn dies die Modularität erhöht) und (2) Aggregation (Communities werden zu Super-Knoten verschmolzen und der Prozess wiederholt).
 
 \textbf{Eigenschaften:}
 \begin{itemize}
-  \item Zeitkomplexität: $O(n \log n)$
-  \item Deterministisch bei fester Knotenreihenfolge
-  \item Berücksichtigt Kantengewichte
-  \item Sehr effizient für grosse Netzwerke
+  \item Sehr schnell ($O(n \log n)$), auch für grosse Netzwerke geeignet
+  \item Deterministisch (bei fester Reihenfolge)
+  \item Berücksichtigt Kantengewichte gut
+  \item Erzeugt hierarchische Community-Struktur
 \end{itemize}
 
 \paragraph{2. Label Propagation}
-
-Label Propagation \cite{raghavan2007near} ist ein semi-synchroner Algorithmus, bei dem Knoten iterativ das häufigste Label ihrer Nachbarn übernehmen.
-
-\textbf{Algorithmus:}
-\begin{enumerate}
-  \item Initialisiere jeden Knoten mit eindeutigem Label
-  \item Wiederhole bis Konvergenz:
-  \begin{itemize}
-    \item Für jeden Knoten $v$ in zufälliger Reihenfolge:
-    \item Setze Label von $v$ auf das häufigste Label seiner Nachbarn
-    \item Bei Gleichstand: zufällige Auswahl
-  \end{itemize}
-\end{enumerate}
+Ein semi-synchroner Algorithmus: Jeder Knoten übernimmt iterativ das häufigste Label seiner Nachbarn. Sehr schnell, aber nicht-deterministisch (verschiedene Runs können unterschiedliche Ergebnisse liefern).
 
 \textbf{Eigenschaften:}
 \begin{itemize}
-  \item Zeitkomplexität: nahezu linear $O(m)$
-  \item Nicht-deterministisch (zufällige Auswahl bei Gleichständen)
-  \item Kann Kantengewichte berücksichtigen
-  \item Schnell, aber instabil - verschiedene Runs produzieren unterschiedliche Ergebnisse
+  \item Extrem schnell (nahezu linear $O(m)$)
+  \item Nicht-deterministisch $\rightarrow$ mehrere Runs empfohlen
+  \item Kann zu unbalancierten Communities führen
+  \item Geeignet für explorative Analysen
 \end{itemize}
 
-\paragraph{3. Greedy Modularity Maximization}
-
-Ein hierarchischer agglomerativer Algorithmus, der iterativ Community-Paare mit grösstem Modularitätszuwachs zusammenführt \cite{clauset2004finding}.
-
-\textbf{Algorithmus:}
-\begin{enumerate}
-  \item Beginne mit jeder Knotengruppe als eigene Community
-  \item Berechne $\Delta Q$ für alle Paare benachbarter Communities
-  \item Führe das Paar mit maximalem $\Delta Q > 0$ zusammen
-  \item Wiederhole bis keine Verbesserung mehr möglich
-\end{enumerate}
+\paragraph{3. Greedy Modularity}
+Ein hierarchischer agglomerativer Algorithmus: startet mit jedem Knoten als eigene Community und führt iterativ Paare zusammen, die die Modularität am stärksten erhöhen.
 
 \textbf{Eigenschaften:}
 \begin{itemize}
-  \item Zeitkomplexität: $O(md \log n)$ mit $d$ = Netzwerkdichte
+  \item Mittlere Laufzeit ($O(md \log n)$)
   \item Deterministisch
-  \item Erzeugt hierarchische Community-Struktur (Dendrogram)
-  \item Mittlere Laufzeit, gute Modularität
+  \item Erzeugt Dendrogram (hierarchische Struktur)
+  \item Gute Balance zwischen Geschwindigkeit und Qualität
 \end{itemize}
 
-\paragraph{4. Girvan-Newman}
-
-Ein divisiver hierarchischer Algorithmus, der iterativ Kanten mit höchster Betweenness Centrality entfernt \cite{girvan2002community}.
-
-\textbf{Algorithmus:}
-\begin{enumerate}
-  \item Berechne Betweenness Centrality für alle Kanten
-  \item Entferne Kante(n) mit höchster Betweenness
-  \item Aktualisiere Betweenness der verbleibenden Kanten
-  \item Wiederhole und evaluiere Modularität nach jedem Schritt
-  \item Wähle Partition mit höchster Modularität
-\end{enumerate}
+\paragraph{4. Girvan-Newman (Edge Betweenness)}
+Ein divisiver Algorithmus: entfernt iterativ Kanten mit höchster Betweenness Centrality (Kanten, die viele kürzeste Pfade tragen). Sehr rechenintensiv, historisch wichtig, aber für grosse Netzwerke unpraktisch.
 
 \textbf{Eigenschaften:}
 \begin{itemize}
-  \item Zeitkomplexität: $O(m^2 n)$ bzw. $O(n^3)$ für dünn besetzte Netzwerke
-  \item Sehr rechenintensiv
+  \item Sehr langsam ($O(m^2 n)$)
   \item Erzeugt vollständigen Dendrogram
-  \item Historisch wichtig, aber für grosse Netzwerke unpraktisch
+  \item Gut für kleine Netzwerke und didaktische Zwecke
+  \item In der Praxis durch schnellere Methoden ersetzt
 \end{itemize}
 
-\subsubsection{Parameterwahl und Stabilität}
+\subsubsection{Modularität als Qualitätsmass}
 
-\textbf{Gewichtsberücksichtigung:}
+Modularität $Q$ misst, wie stark die Vernetzung innerhalb von Communities die Erwartung (unter Random-Graph-Annahme) übertrifft. Werte nahe 1 bedeuten starke Community-Struktur; Werte nahe 0 bedeuten zufällige Vernetzung.
 
-Alle Algorithmen wurden mit Kantengewichten ausgeführt (\texttt{weight='weight'}), um die Intensität von Passbeziehungen bzw. Match-Interaktionen zu berücksichtigen.
-
-\textbf{Umgang mit gerichteten Netzwerken:}
-
-Da die meisten Community-Detection-Algorithmen für ungerichtete Graphen entwickelt wurden, konvertieren wir gerichtete Netzwerke:
-
-\begin{equation}
-G_{\text{undirected}}(u,v) = w(u,v) + w(v,u)
-\end{equation}
-
-Die Richtungsinformation geht verloren, aber die Gesamtstärke der Beziehung bleibt erhalten.
-
-\textbf{Stabilität (Label Propagation):}
-
-Label Propagation ist stochastisch. Wir führen 5 unabhängige Runs durch und wählen das Ergebnis mit höchster Modularität:
-
-\begin{equation}
-C^* = \arg\max_{C \in \{C_1, \ldots, C_5\}} Q(G, C)
-\end{equation}
-
-In unseren Experimenten war die Varianz gering (alle Runs ergaben identische Modularität), was auf stabile Community-Struktur hindeutet.
-
-\subsection{Qualitätsmasse}
-
-\subsubsection{Modularität}
-
-Modularität $Q$ \cite{newman2006modularity} misst die Stärke der Community-Struktur:
-
-\begin{equation}
-Q = \frac{1}{2m} \sum_{i,j} \left[A_{ij} - \frac{k_i k_j}{2m}\right] \delta(c_i, c_j)
-\end{equation}
-
-wobei:
+\textbf{Interpretation:}
 \begin{itemize}
-  \item $A_{ij}$ = Gewicht der Kante zwischen $i$ und $j$
-  \item $k_i$ = Grad (gewichtete Summe) von Knoten $i$
-  \item $m$ = Gesamtgewicht aller Kanten
-  \item $\delta(c_i, c_j) = 1$ wenn $i$ und $j$ in derselben Community, sonst 0
-\end{itemize}
-
-Interpretation:
-\begin{itemize}
-  \item $Q \in [-1, 1]$
   \item $Q > 0.3$: signifikante Community-Struktur
-  \item $Q > 0.7$: starke Community-Struktur
+  \item $Q > 0.7$: sehr starke Community-Struktur
+  \item $Q > 0.9$: extrem klare Gruppenbildung (selten in realen Netzwerken)
 \end{itemize}
 
-\subsubsection{Coverage}
+\textbf{Technische Anpassungen:}
+\begin{itemize}
+  \item \textbf{Gerichtete Netzwerke:} Da die meisten Algorithmen für ungerichtete Graphen konzipiert sind, konvertieren wir gerichtete Netzwerke, indem wir Gewichte in beiden Richtungen addieren
+  \item \textbf{Gewichte:} Alle Algorithmen berücksichtigen Kantengewichte (\texttt{weight='weight'})
+  \item \textbf{Stabilität (Label Propagation):} Wir führen 5 Runs durch und wählen das Ergebnis mit höchster Modularität
+\end{itemize}
 
-Coverage misst den Anteil von Kanten innerhalb von Communities:
-
-\begin{equation}
-\text{Coverage} = \frac{\text{Anzahl Intra-Community-Kanten}}{\text{Gesamtanzahl Kanten}}
-\end{equation}
-
-Hohe Coverage (nahe 1) bedeutet wenige Kanten zwischen Communities.
-
-\subsection{Ergebnisse}
+\subsection{Ergebnisse: Community Detection}
 
 \subsubsection{Pass-Netzwerk (Deutschland Bundesliga)}
 
-Das Pass-Netzwerk wurde auf die grösste zusammenhängende Komponente reduziert (283 Knoten, 59.8\% des Originalnetworks).
+Für die Community Detection verwenden wir die grösste zusammenhängende Komponente (283 Knoten, 59.8\% des Netzwerks).
 
 \begin{table}[h]
 \centering
-\caption{Vergleich der Algorithmen auf Pass-Netzwerk}
+\caption{Algorithmenvergleich auf Pass-Netzwerk (Deutschland, grösste Komponente)}
 \label{tab:pass_community_results}
-\resizebox{\textwidth}{!}{% % Skaliert die Tabelle auf Textbreite
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Algorithmus} & \textbf{Communities} & \textbf{Modularität} & \textbf{Coverage} & \textbf{Min} & \textbf{Max} & \textbf{Ø Grösse} \\
@@ -205,35 +163,48 @@ Girvan-Newman & 12 & 0.881 & 0.939 & 1 & 30 & 23.6 \\
 \end{table}
 
 \textbf{Beobachtungen:}
-
 \begin{itemize}
-  \item \textbf{Sehr hohe Modularität} ($Q > 0.88$): Pass-Netzwerke zeigen extrem starke Community-Struktur
-  \item \textbf{Konsistenz zwischen Algorithmen}: Alle finden 10-12 Communities mit ähnlichen Grössen
+  \item \textbf{Sehr hohe Modularität} ($Q > 0.88$): Pass-Netzwerke zeigen extrem starke Community-Struktur -- Spieler passen primär zu Teamkollegen
+  \item \textbf{Konsistenz:} Alle Algorithmen finden 10--12 Communities mit ähnlichen Grössen (23--31 Spieler)
   \item \textbf{Hohe Coverage} ($> 0.94$): Über 94\% der Pässe erfolgen innerhalb von Communities
-  \item \textbf{Louvain als bester Algorithmus}: Höchste Modularität bei deterministischem Verhalten
+  \item \textbf{Louvain empfohlen:} Höchste Modularität, deterministisch, schnell
 \end{itemize}
 
-\textbf{Interpretation - Teams als Communities:}
+Abbildung~\ref{fig:pass_communities_algorithm_comparison} zeigt den direkten Vergleich der Algorithmen: Modularität, Anzahl Communities und Grössenverteilungen sind sehr ähnlich, was die Robustheit der gefundenen Struktur bestätigt.
 
-Analyse der Community-Zusammensetzung (Louvain) zeigt perfekte oder nahezu perfekte Übereinstimmung mit realen Teams:
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE4/pass_communities_algorithm_comparison.png}
+  \caption{Algorithmenvergleich auf dem Pass-Netzwerk (Deutschland). Louvain erzielt die höchste Modularität ($Q = 0.886$), Label Propagation die höchste Coverage aber mit einer sehr grossen Ausreisser-Community (Max 51).}
+  \label{fig:pass_communities_algorithm_comparison}
+\end{figure}
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/LE4/pass_communities_louvain.png}
+  \caption{Grössenverteilungen der Communities für vier Algorithmen. Louvain und Greedy liefern sehr uniforme Grössen (23--31), Label Propagation zeigt einen Ausreisser (bis 51), Girvan-Newman produziert eine Singleton-Community.}
+  \label{fig:community_size_dist}
+\end{figure}
+
+\paragraph{Interpretation: Communities = Teams}
+Die algorithmisch gefundenen Communities entsprechen nahezu perfekt den realen Teams. Analyse der Louvain-Communities zeigt:
 \begin{itemize}
   \item Community 1 (31 Spieler): 100\% FC Köln
   \item Community 2 (28 Spieler): 100\% Borussia Dortmund  
-  \item Community 3 (27 Spieler): 96.3\% Wolfsburg, 3.7\% Stuttgart
+  \item Community 3 (27 Spieler): 96.3\% VfL Wolfsburg, 3.7\% VfB Stuttgart
   \item Community 4 (26 Spieler): 100\% FC Augsburg
   \item Community 5 (26 Spieler): 100\% Bayern München
 \end{itemize}
 
-Dies bestätigt die erwartete Struktur: Spieler passen primär zu Teamkollegen. Die wenigen Ausreisser (z.B. 1 Stuttgart-Spieler in Wolfsburg-Community) können Transferspieler oder Datenfehler sein.
+Dies bestätigt die erwartete Struktur und validiert die Netzwerkkonstruktion. Die wenigen Ausreisser (z.B. 1 Stuttgart-Spieler in Wolfsburg-Community) sind vermutlich Transferspieler oder Fehler in der Passempfänger-Identifikation.
 
 \subsubsection{Match-Netzwerk (FIFA World Cup)}
 
-Das Match-Netzwerk ist kleiner (32 Teams) und dichter ($\rho = 0.127$).
+Das Match-Netzwerk ist kleiner (32 Teams) und dichter. Wir erwarten Communities, die die Turnierstruktur (Gruppenphase + K.O.-Runden) widerspiegeln.
 
 \begin{table}[h]
 \centering
-\caption{Community Detection auf Match-Netzwerk}
+\caption{Community Detection auf Match-Netzwerk (World Cup)}
 \label{tab:match_community_results}
 \begin{tabular}{lccc}
 \toprule
@@ -247,223 +218,125 @@ Greedy Modularity & 6 & 0.701 & 5.3 \\
 \end{table}
 
 \textbf{Beobachtungen:}
-
 \begin{itemize}
-  \item \textbf{Moderate Modularität} ($Q \approx 0.7$): Immer noch starke, aber weniger ausgeprägte Communitystruktur als Pass-Netzwerke
-  \item \textbf{6 Communities}: Entspricht der Gruppenanzahl der WM-Vorrunde (8 Gruppen, 4 Teams)
-  \item \textbf{Strukturelle Bedeutung}: Communities reflektieren Turnierstruktur und Spielpaarungen
+  \item \textbf{Moderate Modularität} ($Q \approx 0.7$): Starke, aber weniger ausgeprägte Community-Struktur als Pass-Netzwerke
+  \item \textbf{6 Communities:} Weniger als die 8 WM-Vorrundengruppen, da K.O.-Spiele Gruppen verbinden
+  \item \textbf{Strukturelle Bedeutung:} Communities reflektieren primär Gruppenphase mit teilweisen K.O.-Überlappungen
 \end{itemize}
 
-\textbf{Beispiel-Communities (Louvain):}
-
-\begin{itemize}
-  \item Community 1 (4): Belgien, England, Panama, Tunesien
-  \item Community 2 (8): Ägypten, Iran, Marokko, Portugal, Russland, Saudi-Arabien, Spanien, Uruguay
-  \item Community 5 (4): Deutschland, Südkorea, Mexiko, Schweden
-\end{itemize}
-
-Die gefundenen Communities entsprechen teilweise den WM-Gruppen, aber mit Überlappungen durch Knockout-Phase-Spiele.
-
-\subsection{Visualisierung}
-
-Die Visualisierung dient hier primär zwei Zielen: (i) Qualitätsvergleich der Algorithmen anhand aggregierter Kennzahlen und (ii) anschauliche Prüfung, ob die Communities eine plausible sportliche Interpretation tragen.
-
-Abbildung~\ref{fig:pass_communities_algorithm_comparison} fasst die wichtigsten Vergleichsmetriken zusammen. Insbesondere sind die Modularitätswerte (0.879--0.886) und die Coverage (0.939--0.955) aussergewöhnlich hoch, was die erwartete Teamstruktur in Passnetzwerken widerspiegelt.
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=\linewidth]{figures/LE4/pass_communities_algorithm_comparison.png}
-  \caption{Algorithmusvergleich auf dem Passnetzwerk (Deutschland, dokumentiert: 473 Knoten, 8{,}786 Kanten): Modularität, Anzahl Communities, Coverage und mittlere Community-Grösse. Louvain erzielt die höchste Modularität ($Q\approx 0.886$), Label Propagation erreicht die höchste Coverage, erzeugt aber eine deutlich grössere (möglicherweise verschmolzene) Community (Max-Grösse 51).}
-  \label{fig:pass_communities_algorithm_comparison}
-\end{figure}
-
-Die Grössenverteilungen der Communities (Abbildung~\ref{fig:community_size_dist}) zeigen zudem, dass die meisten Communities in einem realistischen Korridor von ca. 23--31 Spielern liegen. Ausreisser (z.B. sehr kleine Singleton-Community bei Girvan-Newman oder sehr grosse Community bei Label Propagation) sind wichtige Warnsignale für Über- bzw. Untersegmentierung.
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/LE4/pass_communities_louvain.png}
-  \caption{Community-Grössenverteilungen für vier Algorithmen (Histogramme). Dokumentiert: Louvain und Greedy liefern sehr uniforme Grössen (Mean 25.7, Range 23--31), Label Propagation zeigt einen grossen Ausreisser (bis 51), Girvan-Newman produziert zusätzlich eine sehr kleine Community (Min 1). \textbf{\#ToDO:} Dateiname und Inhalt sind potenziell missverständlich (\texttt{pass\_communities\_louvain.*} wirkt wie Netzwerk-Plot, dokumentiert ist jedoch die Grössenverteilung).}
-  \label{fig:community_size_dist}
-\end{figure}
-
-Für das Matchnetzwerk (World Cup) liegt eine Louvain-Visualisierung vor (Abbildung~\ref{fig:match_communities_louvain}). Da die zugehörige \texttt{.txt}-Beschreibung eher generisch ist, sollte die finale Interpretation (z.B. Gruppenphase vs. K.O.-Phase) anhand der tatsächlich eingefärbten Teamgruppen im Plot überprüft werden.
-
-\begin{figure}[tbp]
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/LE4/match_communities_louvain.png}
-  \caption{Louvain-Communities im Matchnetzwerk (World Cup). \textbf{\#ToDO:} Die dokumentierte Beschreibung enthält keine konkreten Teamlisten/Modularität; vor finaler Diskussion ist zu prüfen, ob die Communities primär Gruppenphase, K.O.-Verläufe oder andere Turnierartefakte widerspiegeln.}
+  \caption{Louvain-Communities im Match-Netzwerk (World Cup). Farbcodierung zeigt 6 Communities, die primär Vorrunden-Gruppen mit K.O.-Verknüpfungen widerspiegeln.}
   \label{fig:match_communities_louvain}
 \end{figure}
 
-\subsection{Diskussion}
-
-\subsubsection{Algorithmenvergleich}
-
-\textbf{Empfehlung: Louvain-Methode}
-
-Für Fussballnetzwerke ist Louvain die beste Wahl:
+\textbf{Beispiel-Communities (Louvain):}
 \begin{itemize}
-  \item Höchste oder gleich-höchste Modularität
-  \item Deterministisch und reproduzierbar
-  \item Effizient auch für grosse Netzwerke
-  \item Berücksichtigt Kantengewichte optimal
+  \item Community 1 (4 Teams): Belgien, England, Panama, Tunesien (Gruppe G + teilweise H)
+  \item Community 2 (8 Teams): Ägypten, Iran, Marokko, Portugal, Russland, Saudi-Arabien, Spanien, Uruguay (mehrere Gruppen, verbunden durch K.O.-Spiele)
+  \item Community 5 (4 Teams): Deutschland, Südkorea, Mexiko, Schweden (Gruppe F)
 \end{itemize}
 
-\textbf{Label Propagation:}
-\begin{itemize}
-  \item Sehr schnell, aber instabil
-  \item Tendiert zu grösseren Communities (eine mit 51 Knoten)
-  \item Geeignet für explorative Analysen oder sehr grosse Netzwerke
-\end{itemize}
+\subsection{Intra-Team Analyse: Positionsbasierte Strukturen}
 
-\textbf{Girvan-Newman:}
-\begin{itemize}
-  \item Rechenintensiv (16 Sekunden für 283 Knoten)
-  \item Erzeugt viele kleine Communities (Min=1)
-  \item Historisch relevant, aber praktisch überholt
-\end{itemize}
+Nachdem wir Teams als Communities identifiziert haben, stellt sich die Frage: Bilden sich \textbf{innerhalb eines Teams} Sub-Communities nach Position? Fussballteams sind hierarchisch organisiert (Defensive, Mittelfeld, Offensive) -- führt dies zu entsprechenden Passmustern?
 
-\subsubsection{Fachliche Interpretation}
+\paragraph{Hypothese:} Pass-Muster innerhalb eines Teams sollten positionsbasierte Sub-Communities bilden (z.B. Verteidiger $\rightarrow$ Mittelfeld $\rightarrow$ Stürmer).
 
-\textbf{Pass-Netzwerke:}
-
-Die perfekte Übereinstimmung von algorithmischen Communities mit realen Teams validiert:
-\begin{itemize}
-  \item Die Korrektheit der Netzwerkkonstruktion (Pass-Receiver-Identifikation)
-  \item Die Dominanz von Intra-Team-Pässen über Inter-Team-Interaktionen
-  \item Die Eignung von Modularitäts-basierten Methoden für strukturierte soziale Netzwerke
-\end{itemize}
-
-Anwendungen:
-\begin{itemize}
-  \item Automatische Team-Identifikation aus Spieldaten (ohne Metadaten)
-  \item Erkennung von Transferspielern oder Taktikänderungen (Spieler in falscher Community)
-  \item Analyse von Team-Kohäsion (Modularität einzelner Communities)
-\end{itemize}
-
-\textbf{Match-Netzwerke:}
-
-Communities reflektieren Turnierstruktur:
-\begin{itemize}
-  \item Gruppenphase schafft lokale Cluster (Teams spielen primär gegen Gruppengegner)
-  \item Knockout-Phase verbindet Gruppen asymmetrisch
-  \item Geografie und Stärke spielen sekundäre Rolle
-\end{itemize}
-
-Anwendungen:
-\begin{itemize}
-  \item Turnier-Bracket-Rekonstruktion
-  \item Identifikation von "Spielgruppen" in Ligen
-  \item Vorhersage zukünftiger Matches basierend auf Community-Zugehörigkeit
-\end{itemize}
-
-\subsection{Intra-Team Community Analyse: Positionsbasierte Strukturen}
-
-\subsubsection{Motivation}
-
-Während die Community Detection auf Netzwerkebene erfolgreich Teams identifiziert, stellt sich die Frage, ob innerhalb eines Teams Sub-Communities entstehen, die mit Spielerrollen korrelieren. Fussballteams sind hierarchisch organisiert:
-
-\begin{itemize}
-  \item \textbf{Defensive}: Torwart, Verteidiger
-  \item \textbf{Mittelfeld}: Zentrale und offensive Mittelfeldspieler, Flügelspieler
-  \item \textbf{Offensive}: Stürmer
-\end{itemize}
-
-Hypothese: Pass-Muster innerhalb eines Teams sollten positionsbasierte Sub-Communities bilden, da Spieler primär mit Teammates auf benachbarten Positionen interagieren (z.B. Verteidiger $\rightarrow$ Mittelfeld $\rightarrow$ Stürmer).
-
-\subsubsection{Methode}
-
-Wir analysieren das grösste Team im Pass-Netzwerk (Köln, 31 Spieler):
-
+\paragraph{Methode:} Wir analysieren das grösste Team im Pass-Netzwerk (FC Köln, 31 Spieler):
 \begin{enumerate}
-  \item Extraktion des Team-Subgraphen aus dem Pass-Netzwerk
-  \item Anwendung der Louvain-Methode auf den isolierten Team-Graph
-  \item Analyse der Position-Distribution in gefundenen Communities
-  \item Berechnung von Position Homogeneity: $H = 1 - \frac{E}{E_{max}}$, wobei $E$ die Shannon-Entropie der Positionsverteilung ist
+  \item Extraktion des Team-Subgraphen
+  \item Louvain-Community Detection auf dem isolierten Team-Graph
+  \item Analyse der Positionsverteilung in gefundenen Communities
 \end{enumerate}
 
-\subsubsection{Ergebnisse}
-
-    \textbf{Team Köln Pass-Netzwerk:}
+\paragraph{Ergebnisse:}
+\textbf{Team Köln Pass-Netzwerk:}
 \begin{itemize}
-  \item Nodes: 31, Edges: 241, Durchschnittlicher Grad: 15.55
-  \item Communities gefunden: 3--4
-  \item Modularity: Q = 0.109 (deutlich niedriger als Inter-Team: 0.886)
+  \item 31 Spieler, 241 Passverbindungen, Ø Grad: 15.55
+  \item \textbf{3 Communities gefunden}
+  \item \textbf{Modularität: $Q = 0.109$} (deutlich niedriger als Inter-Team: $Q = 0.886$)
 \end{itemize}
 
-\textbf{Community Zusammensetzung:}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|c|c|c|c|c|}
-\hline
-\textbf{Community} & \textbf{Grösse} & \textbf{Defensive} & \textbf{Mittelfeld} & \textbf{Offensive} & \textbf{Goalkeeper} \\
-\hline
-Community 1 & 14 & 50.0\% & 42.9\% & 7.1\% & 0\% \\
-Community 2 & 8 & 62.5\% & 37.5\% & 0\% & 0\% \\
-Community 3 & 6 & 33.3\% & 16.7\% & 50.0\% & 0\% \\
-Community 4 & 3 & 0\% & 0\% & 66.7\% & 33.3\% \\
-\hline
-\end{tabular}
-\caption{Position Distribution in Köln Team Communities}
-\end{table}
-
-    \textbf{\#ToDO:} Die zugehörige Abbildungsdokumentation (Abbildung~\ref{fig:team_position_distribution}) berichtet 3 Communities mit Grössen (19, 8, 4) statt 4 Communities. Vor finaler Abgabe müssen Tabelle, Plot und zugrundeliegender Exportlauf konsolidiert werden.
-
-\textbf{Position Homogeneity:}
-\begin{itemize}
-  \item Community 1: H = 0.134 (sehr heterogen: Mix aus Defensive/Mittelfeld)
-  \item Community 2: H = 0.240 (heterogen: primär Defensive, etwas Mittelfeld)
-  \item Community 3: H = 0.189 (heterogen: Mix, leichte Offensive-Dominanz)
-  \item Community 4: H = 0.311 (mässig homogen: primär Offensive + Torwart)
-\end{itemize}
-
-\begin{figure}[tbp]
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/LE4/team_position_distribution.png}
-\caption{Positionsverteilung innerhalb der Köln-Communities (100\% gestapelt). Dokumentiert sind 3 Communities (19/8/4 Spieler): eine grosse gemischte Defensive/Mittelfeld-Community, eine defensivlastige Community und eine kleinere, offensiv geprägte Community mit Torwartanteil.}
+\caption{Positionsverteilung innerhalb der Köln-Communities (100\% gestapelt). Die drei Communities zeigen hohe Positions-Diversität: Community 1 (19 Spieler) ist primär Defensive/Mittelfeld, Community 2 (8 Spieler) ebenso defensivlastig, Community 3 (4 Spieler) zeigt leichte offensive Prägung mit Torwartanteil.}
 \label{fig:team_position_distribution}
 \end{figure}
 
-\subsubsection{Interpretation}
+\textbf{Community-Zusammensetzung:}
+Alle drei Communities enthalten \textbf{Spieler aus mehreren Positionen}. Es gibt keine klare Trennung nach Defensive/Mittelfeld/Offensive. Die niedrige Modularität ($Q = 0.109$) zeigt schwache Sub-Struktur.
 
+\paragraph{Interpretation:}
 Die Ergebnisse zeigen \textbf{keine klare positionsbasierte Clusterbildung}:
-
-\textbf{Befunde:}
 \begin{itemize}
-  \item Niedrige Modularität (Q = 0.109) zeigt schwache Community-Struktur
-  \item Niedrige Position Homogeneity (H < 0.35) zeigt hohe Positions-Diversität innerhalb Communities
-  \item Communities sind primär durch Spielintensität (Hub-Spieler), nicht durch Positionen definiert
-  \item Nur Community 4 (klein, 3 Spieler) zeigt leichte positionsbasierte Struktur (Offensive + Torwart)
+  \item \textbf{Taktische Flexibilität:} Moderne Fussballtaktiken erfordern positions-übergreifende Interaktionen
+  \item \textbf{Hub-Spieler dominieren:} Zentrale Mittelfeldspieler (Playmaker) verbinden alle Positionen und "verwischen" positionsbasierte Cluster
+  \item \textbf{Sportlich sinnvoll:} Isolierte Positions-Cluster würden taktische Inflexibilität signalisieren -- erfolgreiche Teams brauchen positions-übergreifende Vernetzung
 \end{itemize}
 
-\textbf{Mögliche Erklärungen:}
-\begin{enumerate}
-  \item \textbf{Taktische Flexibilität}: Moderne Fussballtaktiken erfordern positions-übergreifende Interaktionen (z.B. Verteidiger-Stürmer-Direktpässe)
-  \item \textbf{Hub-Spieler dominieren}: Zentrale Mittelfeldspieler (Playmaker) verbinden alle Positionen und "verwischen" positionsbasierte Cluster
-  \item \textbf{Kleine Netzwerkgrösse}: 31 Knoten sind zu wenig für klare Sub-Strukturen (im Vergleich zu 473 Knoten im Gesamtnetzwerk)
-  \item \textbf{Algorithmus-Limitierung}: Louvain-Methode optimiert Modularität, die möglicherweise nicht optimal für hierarchische/positionsbasierte Strukturen ist
-\end{enumerate}
+Die moderate Modularität ($Q = 0.109$) innerhalb eines Teams ist daher ein \textbf{positives Signal}: Sie zeigt den optimalen Kompromiss zwischen Spezialisierung (verschiedene Positionen haben unterschiedliche Rollen) und Integration (alle Positionen müssen zusammenarbeiten).
 
-\textbf{Fachliche Bedeutung:}
+\subsection{Zusammenfassung \& Diskussion}
 
-Das Fehlen klarer positionsbasierter Sub-Communities ist sportlich sinnvoll:
+\subsubsection{Algorithmenvergleich}
+
+\textbf{Empfehlung für Fussballnetzwerke: Louvain-Methode}
 \begin{itemize}
-  \item Erfolgreiches Spiel erfordert \textbf{positions-übergreifende Vernetzung}
-  \item Isolierte Positions-Cluster würden taktische Inflexibilität signalisieren
-  \item Die moderate Modularität (Q = 0.109) zeigt optimalen Kompromiss zwischen Spezialisierung und Integration
+  \item Höchste Modularität ($Q = 0.886$)
+  \item Deterministisch und reproduzierbar
+  \item Effizient auch für grosse Netzwerke ($O(n \log n)$)
+  \item Berücksichtigt Kantengewichte optimal
 \end{itemize}
 
-\subsection{Schlussfolgerung}
-
-Community Detection ist ein mächtiges Werkzeug zur Strukturanalyse von Netzwerken. In Fussballnetzwerken:
-
+\textbf{Alternative: Label Propagation}
 \begin{itemize}
-  \item Pass-Netzwerke zeigen \textbf{sehr starke, klare Community-Struktur} (Teams) auf Inter-Team-Ebene
-  \item \textbf{Intra-Team}: Keine klaren positionsbasierten Sub-Communities (moderne Taktiken erfordern positions-übergreifende Vernetzung)
-  \item Match-Netzwerke zeigen \textbf{moderate Community-Struktur} (Turniergruppen)
-  \item Louvain-Methode ist für beide Netzwerktypen optimal
-  \item Gefundene Communities haben klare fachliche Interpretation und praktische Anwendungen
+  \item Extrem schnell (nahezu linear)
+  \item Geeignet für explorative Analysen
+  \item \textbf{Nachteil:} Instabil, tendiert zu unbalancierten Communities
 \end{itemize}
 
-Die hohe Modularität ($Q > 0.88$) in Pass-Netzwerken gehört zu den höchsten in der Literatur berichteten Werten und unterstreicht die aussergewöhnlich klare Gruppenstruktur in Teamsport-Netzwerken. Im Kontrast dazu zeigt die niedrige Intra-Team-Modularität ($Q = 0.109$) die taktische Notwendigkeit positions-übergreifender Integration.
+\textbf{Girvan-Newman:} Rechenintensiv, historisch relevant, aber praktisch überholt.
+
+\subsubsection{Haupterkenntnisse}
+
+\paragraph{Connected Components} zeigen grundlegende Zusammenhangsstruktur:
+\begin{itemize}
+  \item Pass-Netzwerke fragmentiert (Ersatzspieler, isolierte Knoten)
+  \item Match-Netzwerke vollständig verbunden (Turnierstruktur)
+  \item Für Analysen: Fokus auf grösste Komponente
+\end{itemize}
+
+\paragraph{Cliquen \& k-Cores} identifizieren dichteste Subgraphen:
+\begin{itemize}
+  \item Maximale Cliquen klein (4--5 Knoten) $\rightarrow$ enge Passdreiecke
+  \item k-Cores grösser und praxisrelevanter (bis $k=19$)
+  \item Match-Netzwerk: Cliquen-Grösse 4 entspricht Vorrunden-Gruppen
+\end{itemize}
+
+\paragraph{Community Detection} findet funktionale Gruppen:
+\begin{itemize}
+  \item \textbf{Pass-Netzwerke}: Extrem hohe Modularität ($Q > 0.88$) -- algorithmische Communities = Teams
+  \item \textbf{Match-Netzwerke}: Moderate Modularität ($Q \approx 0.7$) -- Communities reflektieren Turnierstruktur
+  \item \textbf{Intra-Team}: Niedrige Modularität ($Q = 0.11$) -- keine positionsbasierten Sub-Communities $\rightarrow$ sportlich sinnvoll (positions-übergreifende Integration)
+\end{itemize}
+
+\subsubsection{Anwendungen}
+
+\textbf{Pass-Netzwerke:}
+\begin{itemize}
+  \item Automatische Team-Identifikation aus Spieldaten (ohne Metadaten)
+  \item Erkennung von Transferspielern (Spieler in "falscher" Community)
+  \item Analyse von Team-Kohäsion über Intra-Community-Modularität
+\end{itemize}
+
+\textbf{Match-Netzwerke:}
+\begin{itemize}
+  \item Turnier-Bracket-Rekonstruktion
+  \item Identifikation von Spielgruppen in Ligen
+  \item Vorhersage zukünftiger Matches
+\end{itemize}
+
+Die hohe Modularität ($Q > 0.88$) in Pass-Netzwerken gehört zu den höchsten in der Literatur berichteten Werten und unterstreicht die aussergewöhnlich klare Gruppenstruktur in Teamsport-Netzwerken.

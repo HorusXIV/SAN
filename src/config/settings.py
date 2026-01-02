@@ -67,7 +67,7 @@ THROUGH_BALL_TAG_ID = 1901
 
 # Pass network parameters
 DISTANCE_THRESHOLD = 5.0  # Maximum distance to identify receiver (units)
-TIME_THRESHOLD = 5.0      # Maximum time window to identify receiver (seconds)
+TIME_THRESHOLD = 10.0
 
 # Performance tuning
 MAX_WORKERS = max(1, mp.cpu_count() - 1)  # Leave one core free
