@@ -33,17 +33,7 @@ Für metriken, die Zusammenhang voraussetzen (Diameter, Average Path Length), ve
 
 \subsubsection{Diameter und Average Path Length}
 
-Der \textbf{Diameter} $D$ ist die maximale kürzeste Pfaddistanz zwischen zwei Knoten:
-\begin{equation}
-D = \max_{i,j \in V} d(i,j)
-\end{equation}
-
-Die \textbf{Average Path Length} $\bar{d}$ ist die durchschnittliche kürzeste Pfaddistanz über alle Knotenpaare:
-\begin{equation}
-\bar{d} = \frac{1}{n(n-1)} \sum_{i \neq j} d(i,j)
-\end{equation}
-
-wobei $d(i,j)$ die kürzeste Pfaddistanz zwischen Knoten $i$ und $j$ ist.
+Der \textbf{Diameter} ist die maximale kürzeste Pfaddistanz zwischen zwei Knoten, die \textbf{Average Path Length} die durchschnittliche kürzeste Pfaddistanz über alle Knotenpaare.
 
 \paragraph{Ergebnisse}
 
@@ -88,22 +78,7 @@ Beide Netzwerke erfüllen die Small-World-Eigenschaft (Ratio $\approx 1$): Sie z
 
 \subsubsection{Clustering Coefficient und Transitivity}
 
-Der \textbf{lokale Clustering-Koeffizient} $C_i$ misst, wie stark die Nachbarn eines Knotens $i$ untereinander vernetzt sind:
-\begin{equation}
-C_i = \frac{2e_i}{k_i(k_i-1)}
-\end{equation}
-
-wobei $e_i$ die Anzahl der Kanten zwischen den Nachbarn von $i$ ist und $k_i$ der Grad von $i$.
-
-Der \textbf{durchschnittliche Clustering-Koeffizient} ist:
-\begin{equation}
-\bar{C} = \frac{1}{n} \sum_{i=1}^{n} C_i
-\end{equation}
-
-Die \textbf{Transitivity} (globaler Clustering-Koeffizient) misst die Gesamtdichte an Dreiecken:
-\begin{equation}
-C_{global} = \frac{3 \times \text{Anzahl Dreiecke}}{\text{Anzahl verbundener Tripel}}
-\end{equation}
+Der \textbf{lokale Clustering-Koeffizient} misst, wie stark die Nachbarn eines Knotens untereinander vernetzt sind. Der \textbf{durchschnittliche Clustering-Koeffizient} ist das Mittel über alle Knoten. Die \textbf{Transitivity} (globaler Clustering-Koeffizient) misst die Gesamtdichte an Dreiecken.
 
 \paragraph{Ergebnisse}
 
@@ -167,17 +142,7 @@ Die Kombination von \textbf{niedrige Dichte} (0.073) + \textbf{hoher Clustering}
 
 \subsubsection{Assortativity}
 
-\textbf{Assortativity} misst die Tendenz ähnlicher Knoten, sich zu verbinden. Die Degree-Assortativity ist die Pearson-Korrelation der Grade an Kantenendpunkten:
-\begin{equation}
-r = \frac{\text{cov}(k_i, k_j)}{\sigma_{k_i} \sigma_{k_j}}
-\end{equation}
-
-Wertebereich: $[-1, 1]$
-\begin{itemize}
-  \item $r > 0$: \textbf{Assortativ} (Hubs verbinden sich mit Hubs)
-  \item $r < 0$: \textbf{Disassortativ} (Hubs verbinden sich mit peripheren Knoten)
-  \item $r \approx 0$: Neutrales Mischen
-\end{itemize}
+\textbf{Assortativity} misst die Tendenz ähnlicher Knoten, sich zu verbinden (Pearson-Korrelation der Grade an Kantenendpunkten). Wertebereich: $[-1, 1]$. Positive Werte bedeuten assortativ (Hubs verbinden sich mit Hubs), negative Werte disassortativ (Hubs verbinden mit peripheren Knoten), Werte nahe 0 neutrales Mischen.
 
 \paragraph{Ergebnisse}
 
@@ -213,12 +178,7 @@ Vergleich mit anderen Netzwerktypen:
 
 \subsubsection{Reciprocity}
 
-\textbf{Reciprocity} $\rho_{recip}$ misst den Anteil bidirektionaler Kanten in gerichteten Netzwerken:
-\begin{equation}
-\rho_{recip} = \frac{|\{(i,j) : (i,j) \in E \land (j,i) \in E\}|}{|E|}
-\end{equation}
-
-Wertebereich: $[0, 1]$
+\textbf{Reciprocity} misst den Anteil bidirektionaler Kanten in gerichteten Netzwerken (Wertebereich: $[0, 1]$).
 
 \paragraph{Ergebnisse}
 
@@ -253,14 +213,7 @@ Vergleich mit anderen gerichteten Netzwerken:
 
 \subsubsection{Edge Embeddedness}
 
-\textbf{Edge Embeddedness} $emb(i,j)$ zählt die gemeinsamen Nachbarn zweier verbundener Knoten:
-\begin{equation}
-emb(i,j) = |N(i) \cap N(j)|
-\end{equation}
-
-wobei $N(i)$ die Nachbarschaft von Knoten $i$ ist.
-
-Kanten mit $emb(i,j) = 0$ werden \textbf{Local Bridges} genannt. Sie verbinden Gruppen ohne gemeinsame Nachbarn.
+\textbf{Edge Embeddedness} zählt die gemeinsamen Nachbarn zweier verbundener Knoten. Kanten mit $emb(i,j) = 0$ werden \textbf{Local Bridges} genannt (verbinden Gruppen ohne gemeinsame Nachbarn).
 
 \paragraph{Ergebnisse}
 
