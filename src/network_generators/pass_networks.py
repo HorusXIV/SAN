@@ -251,14 +251,14 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
             pagerank = nx.pagerank(G, weight='weight')
             nx.set_node_attributes(G, pagerank, 'pagerank')
         except Exception as e:
-            print(f"Warning: Centrality calculation failed for {competition_name}: {e}")
+            tqdm.write(f"Warning: Centrality calculation failed for {competition_name}: {e}")
         
         # Calculate k-core numbers
         try:
             kcore = nx.core_number(G_undirected)
             nx.set_node_attributes(G, kcore, 'kcore_number')
         except Exception as e:
-            print(f"Warning: K-core calculation failed for {competition_name}: {e}")
+            tqdm.write(f"Warning: K-core calculation failed for {competition_name}: {e}")
     
     # Add modularity class attributes using different community detection algorithms
     if len(G.nodes()) > 0 and len(G.edges()) > 0:
@@ -274,7 +274,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     louvain_dict[node] = idx
             nx.set_node_attributes(G, louvain_dict, 'modularity_class_louvain')
         except Exception as e:
-            print(f"Warning: Louvain community detection failed for {competition_name}: {e}")
+            tqdm.write(f"Warning: Louvain community detection failed for {competition_name}: {e}")
         
         # 2. Label Propagation
         try:
@@ -285,7 +285,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     label_prop_dict[node] = idx
             nx.set_node_attributes(G, label_prop_dict, 'modularity_class_label_propagation')
         except Exception as e:
-            print(f"Warning: Label propagation failed for {competition_name}: {e}")
+            tqdm.write(f"Warning: Label propagation failed for {competition_name}: {e}")
         
         # 3. Greedy (same as Louvain, but with different resolution)
         try:
@@ -296,7 +296,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                     greedy_dict[node] = idx
             nx.set_node_attributes(G, greedy_dict, 'modularity_class_greedy')
         except Exception as e:
-            print(f"Warning: Greedy modularity failed for {competition_name}: {e}")
+            tqdm.write(f"Warning: Greedy modularity failed for {competition_name}: {e}")
         
         # 4. Girvan-Newman (computationally expensive, limit to smaller graphs)
         if len(G.nodes()) < 500:  # Only run on smaller graphs due to computational complexity
@@ -310,7 +310,7 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
                         girvan_dict[node] = idx
                 nx.set_node_attributes(G, girvan_dict, 'modularity_class_girvan_newman')
             except Exception as e:
-                print(f"Warning: Girvan-Newman failed for {competition_name}: {e}")
+                tqdm.write(f"Warning: Girvan-Newman failed for {competition_name}: {e}")
     
     return G
 
@@ -352,39 +352,78 @@ def main():
     
     Generates pass networks for all competitions in the EVENTS_DIR.
     Uses multiprocessing for optimal performance.
+    
+    Progress Tracking Strategy:
+    - Uses file-size weighted progress to better reflect actual workload
+    - Updates progress bar with competition name for visibility
+    - Handles completion order differences from parallel execution
     """
     start_time = datetime.now()
-    print(f"Starting pass network generation (using {MAX_WORKERS} workers)")
+    tqdm.write(f"Starting pass network generation (using {MAX_WORKERS} workers)")
     
     PASS_NETWORKS_DIR.mkdir(parents=True, exist_ok=True)
     
-    print("Loading reference data...")
+    tqdm.write("Loading reference data...")
     players = load_json_fixed(PLAYERS_FILE)
     teams = load_json_fixed(TEAMS_FILE)
     
     event_files = list(EVENTS_DIR.glob("events_*.json"))
-    print(f"Processing {len(event_files)} competitions")
+    tqdm.write(f"Processing {len(event_files)} competitions")
+    
+    # Calculate file sizes for weighted progress (larger files = more work)
+    file_sizes = {ef: ef.stat().st_size for ef in event_files}
+    total_size = sum(file_sizes.values())
     
     args_list = [(ef, players, teams) for ef in event_files]
     
     results = []
+    processed_size = 0
+    
     with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_single_competition, args): args[0] 
-                   for args in args_list}
+        # Map futures to their corresponding event files for size lookup
+        future_to_file = {
+            executor.submit(process_single_competition, args): args[0] 
+            for args in args_list
+        }
         
-        for future in tqdm(as_completed(futures), total=len(futures), 
-                          desc="Processing", unit="file"):
+        # Use weighted progress bar based on file sizes
+        pbar = tqdm(
+            total=100,  # Percentage-based for weighted progress
+            desc="Processing",
+            unit="%",
+            position=0,
+            leave=True,
+            bar_format='{l_bar}{bar}| {n:.1f}/{total}% [{elapsed}<{remaining}, {rate_fmt}] {postfix}'
+        )
+        
+        for future in as_completed(future_to_file):
+            event_file = future_to_file[future]
+            competition_name = event_file.stem.replace('events_', '')
+            
             try:
                 result = future.result()
                 results.append(result)
+                status_icon = "Finished" if result[1] == 'success' else "Failed"
             except Exception as e:
-                print(f"Error: Future failed: {e}")
+                tqdm.write(f"Error: Future failed for {competition_name}: {e}")
+                status_icon = "Failed"
+            
+            # Update progress based on file size weight
+            file_weight = (file_sizes[event_file] / total_size) * 100
+            processed_size += file_weight
+            
+            # Update progress bar with current file info
+            pbar.set_postfix_str(f"{status_icon} {competition_name}")
+            pbar.n = processed_size
+            pbar.refresh()
+        
+        pbar.close()
     
     success_count = sum(1 for r in results if r[1] == 'success')
     fail_count = len(results) - success_count
     
     duration = datetime.now() - start_time
-    print(f"\nComplete: {success_count} successful, {fail_count} failed in {duration}")
+    tqdm.write(f"\nComplete: {success_count} successful, {fail_count} failed in {duration}")
 
 
 if __name__ == "__main__":

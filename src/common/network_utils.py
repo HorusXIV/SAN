@@ -41,7 +41,8 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
     events_clean = events_df[['matchId', 'eventSec', 'playerId', 'teamId', 'start_x', 'start_y']].dropna()
     passes_clean = passes_df[['matchId', 'eventSec', 'playerId', 'teamId', 'end_x', 'end_y', 'pass_type']].dropna(subset=['matchId', 'eventSec', 'playerId', 'teamId', 'end_x', 'end_y'])
     
-    for match_id in tqdm(passes_clean['matchId'].unique(), desc="Finding receivers", leave=False):
+    for match_id in tqdm(passes_clean['matchId'].unique(), desc="Finding receivers", 
+                         position=1, leave=False):
         match_passes = passes_clean[passes_clean['matchId'] == match_id]
         match_events = events_clean[events_clean['matchId'] == match_id]
         

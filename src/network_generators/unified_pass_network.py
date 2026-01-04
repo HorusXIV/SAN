@@ -424,6 +424,11 @@ def main():
     
     Processes all competitions, aggregates pass data, and creates a
     comprehensive network combining all competitions.
+    
+    Progress Tracking Strategy:
+    - Phase 1: File-size weighted progress for competition processing
+    - Phase 2: Explicit progress for aggregation steps
+    - Provides accurate representation of actual workload distribution
     """
     start_time = datetime.now()
     print("Starting unified pass network generation")
@@ -440,11 +445,25 @@ def main():
     event_files = sorted(list(EVENTS_DIR.glob("events_*.json")))
     print(f"Processing {len(event_files)} competitions")
     
+    # Calculate file sizes for weighted progress
+    file_sizes = {ef: ef.stat().st_size for ef in event_files}
+    total_size = sum(file_sizes.values())
+    
     all_passes_list = []
     competition_stats = {}
+    processed_size = 0
     
-    for event_file in tqdm(event_files, desc="Competitions"):
+    # Create weighted progress bar
+    pbar = tqdm(
+        total=100,
+        desc="Processing competitions",
+        unit="%",
+        bar_format='{l_bar}{bar}| {n:.1f}/{total}% [{elapsed}<{remaining}] {postfix}'
+    )
+    
+    for event_file in event_files:
         competition_name = event_file.stem.replace('events_', '')
+        pbar.set_postfix_str(competition_name)
         
         try:
             events = load_json_fixed(event_file)
@@ -456,6 +475,14 @@ def main():
                 
         except Exception as e:
             print(f"Error processing {competition_name}: {e}")
+        
+        # Update progress based on file size weight
+        file_weight = (file_sizes[event_file] / total_size) * 100
+        processed_size += file_weight
+        pbar.n = processed_size
+        pbar.refresh()
+    
+    pbar.close()
     
     if not all_passes_list:
         print("Error: No valid pass data found")
