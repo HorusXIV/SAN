@@ -101,24 +101,12 @@ Barabási-Albert ($m=10$) & 2\,730 & 0.1504 & 2.169 & 3 \\
 Drei häufige Verteilungen für Gradfolgen:
 
 \paragraph{1. Power Law (Scale-Free)}
-\begin{equation}
-P(k) \sim k^{-\gamma}
-\end{equation}
-
 Charakteristisch für Netzwerke mit Preferential Attachment (z.B. soziale Netzwerke, Internet). Wenige Hubs mit sehr hohem Grad dominieren.
 
 \paragraph{2. Exponential}
-\begin{equation}
-P(k) \sim e^{-\lambda k}
-\end{equation}
-
 Typisch für Netzwerke mit zufälligen Prozessen oder Kapazitätsgrenzen. Schneller Abfall bei hohen Graden.
 
 \paragraph{3. Log-Normal}
-\begin{equation}
-P(k) \sim \frac{1}{k} e^{-\frac{(\ln k - \mu)^2}{2\sigma^2}}
-\end{equation}
-
 Häufig in biologischen und technologischen Netzwerken. Rechtssteile Verteilung mit dickeren Enden als Exponential.
 
 \subsubsection{Ergebnisse: Pass-Netzwerk Gradverteilung}
@@ -233,19 +221,9 @@ Wir teilen die Kanten in:
 
 \paragraph{Evaluationsmetriken}
 
-\textbf{1. AUC (Area Under ROC Curve)}
-\begin{equation}
-AUC = P(\text{score}(e^+) > \text{score}(e^-))
-\end{equation}
+\textbf{1. AUC (Area Under ROC Curve)}: Wahrscheinlichkeit, dass eine positive Kante höheren Score hat als eine negative. Wertebereich: $[0, 1]$, perfekt = 1.0.
 
-Wahrscheinlichkeit, dass eine positive Kante höheren Score hat als eine negative. Wertebereich: $[0, 1]$, perfekt = 1.0.
-
-\textbf{2. Precision@k}
-\begin{equation}
-\text{Precision@k} = \frac{\text{Anzahl korrekte Vorhersagen in Top-}k}{k}
-\end{equation}
-
-Anteil korrekter Vorhersagen in den Top-$k$ Kandidaten. Relevant für praktische Anwendungen (z.B. ``Empfehle 10 neue Passverbindungen'').
+\textbf{2. Precision@k}: Anteil korrekter Vorhersagen in den Top-$k$ Kandidaten. Relevant für praktische Anwendungen (z.B. ``Empfehle 10 neue Passverbindungen'').
 
 \subsubsection{Ergebnisse}
 
