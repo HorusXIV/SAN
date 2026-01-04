@@ -7,7 +7,7 @@ Im Kontext von Fussball erwarten wir:
 \begin{itemize}
   \item \textbf{Pass-Netzwerke}: Teams als Communities; Spielformationen als dichtere Substrukturen
   \item \textbf{Match-Netzwerke}: Turniergruppen
-  \item \textbf{Feld-Netzwerke}: Cluster von 
+  \item \textbf{Feld-Netzwerke}: Cluster von Verteidigungs und Angrifsfeldern.
 \end{itemize}
 
 \subsection{Connected Components}
@@ -15,13 +15,13 @@ Im Kontext von Fussball erwarten wir:
 Connected Components beschreiben die grundlegende Zusammenhangsstruktur eines Netzwerks: Gruppen von Knoten, die über Pfade erreichbar sind, aber untereinander nicht verbunden sind.
 
 \paragraph{Pass-Netzwerk (Deutschland)}
-Das Pass-Netzwerk zeigt erwartungsgemäss starke Fragmentierung:
+Das Pass-Netzwerk \ref{fig:pass_network_connected} zeigt erwartungsgemäss starke Fragmentierung:
 \begin{itemize}
   \item \textbf{8 schwach verbundene Komponenten}: Die grösste enthält 473 Knoten (59.8\% des Netzwerks), die übrigen sind isolierte Spieler oder kleine Gruppen
   \item \textbf{Interpretation}: Die grösste Komponente umfasst Spieler mit mindestens indirekten Passverbindungen. Isolierte Komponenten sind typischerweise Ersatzspieler mit minimalem Einsatz oder Fehler in der Passempfänger-Identifikation
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=\linewidth]{figures/LE4/pass_network_connected.png}
   \caption{Connected Components im Pass-Netzwerk (Deutschland). Die grösste Komponente umfasst 473 Knoten (59.8\% des Netzwerks), die übrigen sind Teams ohne Transferspieler}
@@ -29,11 +29,13 @@ Das Pass-Netzwerk zeigt erwartungsgemäss starke Fragmentierung:
 \end{figure}
 
 \paragraph{Match-Netzwerk (World Cup)}
-Match-Netzwerke sind aufgrund der Turnierstruktur verbunden:
+Match-Netzwerke sind aufgrund der Turnierstruktur typischerweise stark verbunden:
 \begin{itemize}
-  \item \textbf{1 Komponente}: Alle 32 Teams sind über Pfade erreichbar
+  \item \textbf{1 starke Komponente}: Alle 32 Teams sind über gerichtete Pfade erreichbar
   \item \textbf{Interpretation}: Das Turnier-Format (Gruppenphase + K.O.-Runden) garantiert einen zusammenhängenden Graphen; jedes Team spielt mindestens 3 Spiele
 \end{itemize}
+
+\textbf{Praktische Bedeutung}: Für Community Detection verwenden wir primär die grösste zusammenhängende Komponente, da isolierte Knoten keine sinnvollen Community-Zuordnungen erlauben.
 
 \subsection{Cliquen und dichte Subgraphen}
 
@@ -57,85 +59,79 @@ Der $k$-Core ist der maximale Subgraph, in dem jeder Knoten mindestens Grad $k$ 
 
 \paragraph{Pass-Netzwerk (Deutschland, grösste Komponente)}
 \begin{itemize}
-  \item \textbf{Maximaler Core:} $k = 19$ (8 Knoten)
-  \item \textbf{Interpretation:} Diese 8 Spieler haben mindestens 19 Passbeziehungen innerhalb des Cores. Sie bilden den Kern eines sehr passintensiven Teams (vermutlich ein Top-Team mit hoher Ballbesitz-Taktik)
-  \item \textbf{Core-Verteilung:} Die meisten Spieler liegen in $k = 5$--$15$, was typischen Team-internen Passmustern entspricht
+  \item \textbf{Maximaler Core:} $k = 38$ (27 Knoten)
+  \item \textbf{Interpretation:} Diese Spieler sind alle vom Verein Köln, was dafür Spricht das sie viel Untereinander passen oder viele Fehlpässe zu anderen Spielern habenTeams
+  \item \textbf{Core-Verteilung:} Die meisten Spieler liegen in $k = 22$--$29$, was typischen Team-internen Passmustern entspricht
 \end{itemize}
 
 \paragraph{Match-Netzwerk (World Cup)}
 \begin{itemize}
-  \item \textbf{Maximaler Core:} $k = 10$ (mehrere Teams)
-  \item \textbf{Interpretation:} Teams mit mindestens 10 Match-Verbindungen sind solche, die weit im Turnier gekommen sind (Vorrunde + mehrere K.O.-Spiele)
+  \item \textbf{Maximaler Core:} $k = 4$
+  \item \textbf{Interpretation:} Alle Teams sind nur mit ihren Gruppe gut verknüpft.
 \end{itemize}
 
-\textbf{Vergleich zu Cliquen:} Während Cliquen vollständige Vernetzung fordern, erlaubt der $k$-Core Flexibilität: Knoten müssen nur mindestens $k$ Verbindungen haben, nicht zu allen anderen. Dadurch sind k-Cores deutlich grösser und praxisrelevanter für reale Netzwerke.
+\textbf{Vergleich zu Cliquen:} Während Cliquen vollständige Vernetzung fordern, erlaubt der $k$-Core Flexibilität: Knoten müssen nur mindestens $k$ Verbindungen haben, nicht zu allen anderen.
 
 \subsection{Community Detection}
 
-Community Detection identifiziert Gruppen mit hoher interner und niedriger externer Vernetzung. Anders als Cliquen müssen Communities nicht vollständig vernetzt sein. Wir vergleichen drei etablierte Algorithmen:
+Community Detection identifiziert Gruppen mit hoher interner und niedriger externer Vernetzung. Anders als Cliquen müssen Communities nicht vollständig vernetzt sein. Wir vergleichen vier Algorithmen: Louvain Algorythmus, Labelpropagation, Fast-Greedy (Clauset-Newman-Moore, \cite{Clauset_2004}) sowie Edge-Betweenes (Girvan-Newman).
 
 \subsubsection{Algorithmen im Überblick}
 
 \paragraph{1. Louvain-Methode}
-Ein gieriger, hierarchischer Algorithmus, der \textbf{Modularität maximiert}. Er arbeitet in zwei Phasen: (1) lokale Optimierung (Knoten wechseln zu benachbarten Communities, wenn dies die Modularität erhöht) und (2) Aggregation (Communities werden zu Super-Knoten verschmolzen und der Prozess wiederholt).
+Ein hierarchischer, gieriger Algorithmus zur \textbf{Maximierung der Modularität}.
 
-\textbf{Eigenschaften:}
+\textbf{Laufzeit:} typischerweise $O(m)$ bis $O(n \log n)$ (implementations- und datenabhängig).
+
 \begin{itemize}
-  \item Sehr schnell ($O(n \log n)$), auch für grosse Netzwerke geeignet
-  \item Deterministisch (bei fester Reihenfolge)
-  \item Berücksichtigt Kantengewichte gut
-  \item Erzeugt hierarchische Community-Struktur
+  \item Gut skalierbar
+  \item Resultate können je nach Implementierung leicht variieren 
+  \item Liefert eine hierarchische Community-Struktur
 \end{itemize}
 
 \paragraph{2. Label Propagation}
-Ein semi-synchroner Algorithmus: Jeder Knoten übernimmt iterativ das häufigste Label seiner Nachbarn. Sehr schnell, aber nicht-deterministisch (verschiedene Runs können unterschiedliche Ergebnisse liefern).
+Ein iterativer Algorithmus, bei dem Knoten das häufigste Nachbarschaftslabel übernehmen, bis Konvergenz erreicht ist.
 
-\textbf{Eigenschaften:}
+\textbf{Laufzeit:} typischerweise $O(m)$ pro Durchlauf; Gesamtaufwand abhängig von der Anzahl Iterationen.
+
+\textbf{Verhalten/Eigenschaften:}
 \begin{itemize}
-  \item Extrem schnell (nahezu linear $O(m)$)
-  \item Nicht-deterministisch $\rightarrow$ mehrere Runs empfohlen
-  \item Kann zu unbalancierten Communities führen
-  \item Geeignet für explorative Analysen
+  \item Extrem schnell
+  \item häufig nicht-deterministisch
+  \item Keine direkte Optimierung einer globalen Zielfunktion.
 \end{itemize}
 
-\paragraph{3. Greedy Modularity}
-Ein hierarchischer agglomerativer Algorithmus: startet mit jedem Knoten als eigene Community und führt iterativ Paare zusammen, die die Modularität am stärksten erhöhen.
+\paragraph{3. Greedy Modularity (Clauset--Newman--Moore)}
+Ein agglomeratives Verfahren, das Communities iterativ so zusammenführt, dass die \textbf{Modularität} am stärksten steigt.
 
-\textbf{Eigenschaften:}
+\textbf{Laufzeit:} klassisch $O(md \log n)$ (mit $d$ als mittlerem Grad).
+
 \begin{itemize}
-  \item Mittlere Laufzeit ($O(md \log n)$)
-  \item Deterministisch
-  \item Erzeugt Dendrogram (hierarchische Struktur)
-  \item Gute Balance zwischen Geschwindigkeit und Qualität
+  \item Deterministisch bei fixer Tie-Breaking-Strategie.
+  \item Liefert ein hierarchisches Merge-Dendrogram.
+  \item Gute Qualität auf vielen Netzwerken, aber weniger skalierbar als Louvain bei sehr grossen Graphen
 \end{itemize}
 
-\paragraph{4. Girvan-Newman (Edge Betweenness)}
-Ein divisiver Algorithmus: entfernt iterativ Kanten mit höchster Betweenness Centrality (Kanten, die viele kürzeste Pfade tragen). Sehr rechenintensiv, historisch wichtig, aber für grosse Netzwerke unpraktisch.
+\paragraph{4. Girvan--Newman (Edge Betweenness)}
+Ein divisiver Algorithmus, der iterativ Kanten mit hoher Edge-Betweenness entfernt und so Communities separiert.
 
-\textbf{Eigenschaften:}
+\textbf{Laufzeit:} typischerweise $O(m^2 n)$ (je nach Implementierung/Variante).
+
+
 \begin{itemize}
-  \item Sehr langsam ($O(m^2 n)$)
-  \item Erzeugt vollständigen Dendrogram
-  \item Gut für kleine Netzwerke und didaktische Zwecke
-  \item In der Praxis durch schnellere Methoden ersetzt
+  \item Sehr rechenintensiv
+  \item Erzeugt ein vollständiges Dendrogram und erlaubt die Wahl eines Schnittniveaus
+  \item Vorallem Historisch/konzeptionell wichtig
 \end{itemize}
 
 \subsubsection{Modularität als Qualitätsmass}
 
 Modularität $Q$ misst, wie stark die Vernetzung innerhalb von Communities die Erwartung (unter Random-Graph-Annahme) übertrifft. Werte nahe 1 bedeuten starke Community-Struktur; Werte nahe 0 bedeuten zufällige Vernetzung.
 
-\textbf{Interpretation:}
-\begin{itemize}
-  \item $Q > 0.3$: signifikante Community-Struktur
-  \item $Q > 0.7$: sehr starke Community-Struktur
-  \item $Q > 0.9$: extrem klare Gruppenbildung (selten in realen Netzwerken)
-\end{itemize}
-
 \textbf{Technische Anpassungen:}
 \begin{itemize}
-  \item \textbf{Gerichtete Netzwerke:} Da die meisten Algorithmen für ungerichtete Graphen konzipiert sind, konvertieren wir gerichtete Netzwerke, indem wir Gewichte in beiden Richtungen addieren
+  \item Da die meisten Algorithmen für ungerichtete Graphen konzipiert sind, konvertieren wir gerichtete Netzwerke, indem wir Gewichte in beiden Richtungen addieren
   \item \textbf{Gewichte:} Alle Algorithmen berücksichtigen Kantengewichte (\texttt{weight='weight'})
-  \item \textbf{Stabilität (Label Propagation):} Wir führen 5 Runs durch und wählen das Ergebnis mit höchster Modularität
 \end{itemize}
 
 \subsection{Ergebnisse: Community Detection}
