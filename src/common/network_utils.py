@@ -21,9 +21,12 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
     Uses scipy's cKDTree for O(log n) nearest neighbor queries, providing
     50-100x speedup over nested loop approaches.
     
+    For successful passes: finds receiver from the same team
+    For intercepted passes: finds receiver from the opposing team
+    
     Args:
         passes_df: DataFrame containing pass events with columns:
-                   matchId, eventSec, playerId, teamId, end_x, end_y
+                   matchId, eventSec, playerId, teamId, end_x, end_y, pass_type
         events_df: DataFrame containing all events with columns:
                    matchId, eventSec, playerId, teamId, start_x, start_y
         distance_threshold: Maximum distance (in units) between pass end and next event
@@ -35,7 +38,7 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
     receiver_ids = pd.Series(index=passes_df.index, dtype='Int64')
     
     events_clean = events_df[['matchId', 'eventSec', 'playerId', 'teamId', 'start_x', 'start_y']].dropna()
-    passes_clean = passes_df[['matchId', 'eventSec', 'playerId', 'teamId', 'end_x', 'end_y']].dropna()
+    passes_clean = passes_df[['matchId', 'eventSec', 'playerId', 'teamId', 'end_x', 'end_y', 'pass_type']].dropna(subset=['matchId', 'eventSec', 'playerId', 'teamId', 'end_x', 'end_y'])
     
     for match_id in tqdm(passes_clean['matchId'].unique(), desc="Finding receivers", leave=False):
         match_passes = passes_clean[passes_clean['matchId'] == match_id]
@@ -67,13 +70,21 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
             candidate_indices = candidate_indices[valid_mask]
             candidates = match_events.iloc[candidate_indices]
             
-            # Apply temporal, team, and player constraints
+            # Apply temporal and player constraints
             time_mask = (
                 (candidates['eventSec'] > pass_row['eventSec']) &
                 (candidates['eventSec'] <= pass_row['eventSec'] + time_threshold)
             )
-            team_mask = (candidates['teamId'] == pass_row['teamId'])
             player_mask = (candidates['playerId'] != pass_row['playerId'])
+            
+            # Team constraint depends on pass type:
+            # - successful: receiver from same team
+            # - intercepted: receiver from opposing team
+            pass_type = pass_row.get('pass_type', 'successful')
+            if pass_type == 'intercepted':
+                team_mask = (candidates['teamId'] != pass_row['teamId'])  # Opposing team
+            else:
+                team_mask = (candidates['teamId'] == pass_row['teamId'])  # Same team
             
             valid_receivers = candidates[time_mask & team_mask & player_mask]
             
