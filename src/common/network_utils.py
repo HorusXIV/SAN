@@ -23,6 +23,7 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
     
     For successful passes: finds receiver from the same team
     For intercepted passes: finds receiver from the opposing team
+    For unsuccessful passes: finds next player to touch ball (any team)
     
     Args:
         passes_df: DataFrame containing pass events with columns:
@@ -80,9 +81,12 @@ def find_receivers_kdtree(passes_df: pd.DataFrame, events_df: pd.DataFrame,
             # Team constraint depends on pass type:
             # - successful: receiver from same team
             # - intercepted: receiver from opposing team
+            # - unsuccessful: next player to touch ball (any team)
             pass_type = pass_row.get('pass_type', 'successful')
             if pass_type == 'intercepted':
                 team_mask = (candidates['teamId'] != pass_row['teamId'])  # Opposing team
+            elif pass_type == 'unsuccessful':
+                team_mask = pd.Series([True] * len(candidates), index=candidates.index)  # Any team
             else:
                 team_mask = (candidates['teamId'] == pass_row['teamId'])  # Same team
             

@@ -111,18 +111,12 @@ def create_pass_network_optimized(events, df_players, df_teams, competition_name
     df_events['eventSec'] = pd.to_numeric(df_events['eventSec'], errors='coerce')
     df_passes_all['eventSec'] = pd.to_numeric(df_passes_all['eventSec'], errors='coerce')
     
-    # Filter out unsuccessful passes - they don't have meaningful receivers
-    df_passes_connected = df_passes_all[df_passes_all['pass_type'].isin(['successful', 'intercepted'])].copy()
-    
-    if len(df_passes_connected) == 0:
-        return None
-    
-    df_passes_connected['passer_id'] = df_passes_connected['playerId']
-    df_passes_connected['receiver_id'] = find_receivers_kdtree(
-        df_passes_connected, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
+    df_passes_all['passer_id'] = df_passes_all['playerId']
+    df_passes_all['receiver_id'] = find_receivers_kdtree(
+        df_passes_all, df_events, DISTANCE_THRESHOLD, TIME_THRESHOLD
     )
     
-    df_passes_network = df_passes_connected.dropna(subset=['receiver_id'])
+    df_passes_network = df_passes_all.dropna(subset=['receiver_id'])
     
     if len(df_passes_network) == 0:
         return None
