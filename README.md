@@ -5,7 +5,7 @@ Network analysis of professional soccer match data using spatio-temporal event d
 ## Authors
 
 - Lukas Breiter
-- GianTruttman
+- Gian Truttman
 - Jessica Schmied
 
 ## Overview
@@ -15,6 +15,7 @@ This project applies social network analysis techniques to professional soccer d
 - **Pass Networks**: Directed player-to-player networks based on passing interactions
 - **Match Networks**: Team-to-team networks representing competitive relationships
 - **Player-Team Networks**: Bipartite networks capturing player-team affiliations
+- **Field Networks**: Spatial networks representing field zone interactions
 - **Unified Networks**: Aggregated cross-competition networks
 
 The analysis includes centrality metrics, community detection, k-core decomposition, and temporal network evolution studies.
@@ -29,40 +30,49 @@ The analysis includes centrality metrics, community detection, k-core decomposit
 │   ├── Networks/                  # Generated network files (GEXF)
 │   │   ├── passes/               # Pass networks
 │   │   ├── matches/              # Match networks
-│   │   └── player_team/          # Bipartite networks
+│   │   ├── player_team/          # Bipartite networks
+│   │   └── field/                # Field zone networks
 │   └── *.json                    # Players, teams, competitions data
 ├── src/                          # Source code
 │   ├── common/                   # Shared utilities
 │   │   ├── data_utils.py        # JSON loading, position extraction
-│   │   ├── network_utils.py     # Network analysis, KD-tree receiver detection
+│   │   ├── network_utils.py     # KD-tree receiver detection
 │   │   └── logging_config.py    # Centralized logging
 │   ├── config/                   # Configuration
 │   │   └── settings.py          # Paths, parameters, constants
 │   └── network_generators/       # Network generation modules
-│       ├── pass_networks.py
-│       ├── match_networks.py
-│       ├── player_team_networks.py
-│       └── unified_pass_network.py
+│       ├── pass_networks.py     # Player pass networks
+│       ├── match_networks.py    # Team match networks
+│       ├── player_team_networks.py  # Bipartite networks
+│       ├── field_networks.py    # Field zone networks
+│       └── unified_pass_network.py  # Cross-competition unified network
 ├── Notebooks/                    # Analysis notebooks
 │   ├── EDA.ipynb                # Exploratory data analysis
-│   ├── LE3.ipynb                # Network modeling & filtering
-│   ├── LE4.ipynb                # Centrality & community detection
-│   └── LE5.ipynb                # Network projections & dynamics
-└── reports/                      # LaTeX report and figures
+│   ├── LE3.ipynb - LE10.ipynb   # Learning exercise notebooks
+│   └── pass_network.gexf        # Sample network for analysis
+├── reports/                      # LaTeX report and figures
+│   ├── SAN_bericht.tex          # Main report
+│   ├── figures/                 # Generated figures
+│   ├── sections/                # Report sections
+│   └── literature/              # Bibliography
+├── logs/                         # Execution logs
+├── pyproject.toml               # Poetry configuration
+└── poetry.lock                  # Locked dependencies
 ```
 
 ## Features
 
 ### Network Generation
-- **Optimized receiver detection** using KD-tree spatial indexing
+- **Optimized receiver detection** using KD-tree spatial indexing (O(log n) queries)
 - **Vectorized operations** for large-scale data processing
-- **Parallel processing** for multi-competition analysis
+- **Parallel processing** with weighted progress tracking
 - **Rich node attributes**: player demographics, roles, team affiliations
 - **Edge weights**: pass counts, accuracy, distance, angles
+- **Built-in metrics**: centrality, community detection, k-core
 
 ### Network Analysis
-- Centrality metrics (degree, betweenness, closeness, eigenvector)
-- Community detection (Louvain, label propagation, greedy modularity)
+- Centrality metrics (degree, betweenness, closeness, PageRank)
+- Community detection (Louvain, label propagation, greedy modularity, Girvan-Newman)
 - K-core decomposition
 - Network projections (bipartite → one-mode)
 - Temporal evolution analysis
@@ -75,7 +85,7 @@ Pappalardo, L., Cintia, P., Rossi, A. et al. (2019). *A public data set of spati
 **Data Repository:**
 Pappalardo, L., & Massucco, E. (2019). *Soccer match event dataset* (Version 5). figshare. https://doi.org/10.6084/m9.figshare.c.4415000.v5
 
-The dataset includes event-level data from:
+**Competitions Included:**
 - English Premier League
 - Spanish La Liga
 - German Bundesliga
@@ -86,36 +96,107 @@ The dataset includes event-level data from:
 
 ## Requirements
 
-- Poetry 2.0+
 - Python 3.12+
-- NetworkX 3.6+
-- pandas, numpy, scipy
-- matplotlib, seaborn
-- tqdm, ijson
-- gensim, tensorflow (for embeddings)
-- fastdtw (for time series analysis)
+- Poetry 2.0+
 
-Install dependencies:
+### Core Dependencies
+| Package | Purpose |
+|---------|---------|
+| networkx | Graph construction and analysis |
+| pandas, numpy | Data processing |
+| scipy | KD-tree spatial indexing |
+| matplotlib, seaborn | Visualization |
+| tqdm | Progress tracking |
+| gensim | Network embeddings |
+| scikit-learn | Machine learning utilities |
+
+## Installation
+
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd SAN
+
+# Install dependencies with Poetry
 poetry install
+
+# Activate the virtual environment
+poetry shell
 ```
 
 ## Usage
 
-Generate networks:
-```python
-# Pass networks
-python -m src.network_generators.pass_networks
+### Generate Networks
 
-# Match networks
-python -m src.network_generators.match_networks
+All network generators are executed as Python modules via Poetry:
 
-# Player-team networks
-python -m src.network_generators.player_team_networks
+```bash
+# Generate pass networks for all competitions
+poetry run python -m src.network_generators.pass_networks
 
-# Unified network
-python -m src.network_generators.unified_pass_network
+# Generate match networks
+poetry run python -m src.network_generators.match_networks
+
+# Generate player-team bipartite networks
+poetry run python -m src.network_generators.player_team_networks
+
+# Generate field zone networks
+poetry run python -m src.network_generators.field_networks
+
+# Generate unified cross-competition network
+poetry run python -m src.network_generators.unified_pass_network
 ```
+
+### Run Notebooks
+
+```bash
+# Start Jupyter notebook server
+poetry run jupyter notebook
+
+# Or use JupyterLab
+poetry run jupyter lab
+```
+
+### Quick Start (All Networks)
+
+```bash
+# Generate all network types
+poetry run python -m src.network_generators.pass_networks && \
+poetry run python -m src.network_generators.match_networks && \
+poetry run python -m src.network_generators.player_team_networks && \
+poetry run python -m src.network_generators.field_networks && \
+poetry run python -m src.network_generators.unified_pass_network
+```
+
+## Output
+
+Generated networks are saved in GEXF format (compatible with Gephi) under `data/Networks/`:
+
+| Directory | Contents |
+|-----------|----------|
+| `passes/` | `pass_network_{competition}.gexf` |
+| `matches/` | `match_network_{competition}.gexf` |
+| `player_team/` | `player_team_network_{competition}.gexf` |
+| `field/` | `field_network_{competition}.gexf` |
+
+## Development
+
+### Add Dependencies
+
+```bash
+# Add a production dependency
+poetry add <package-name>
+
+# Add a development dependency
+poetry add --group dev <package-name>
+```
+
+### Code Style
+
+The project follows PEP 8 conventions. Key patterns:
+- Type hints for function signatures
+- Docstrings for public functions
+- Vectorized operations over loops where possible
 
 ## Related Work
 

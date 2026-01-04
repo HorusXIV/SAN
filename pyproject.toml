@@ -1,9 +1,11 @@
 [project]
 name = "san"
-version = "0.5.0"
-description = ""
+version = "0.6.0"
+description = "Soccer Network Analysis - Network analysis of professional soccer match data"
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Lukas Breiter"},
+    {name = "Gian Truttman"},
+    {name = "Jessica Schmied"}
 ]
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
@@ -15,19 +17,23 @@ dependencies = [
     "ipykernel (>=7.1.0,<8.0.0)",
     "networkx (>=3.6,<4.0)",
     "seaborn (>=0.13.2,<0.14.0)",
-    "ijson (>=3.4.0.post0,<4.0.0)",
     "tqdm (>=4.67.1,<5.0.0)",
-    "iprogress (>=0.4,<0.5)",
     "scipy (>=1.16.3,<2.0.0)",
     "gensim (>=4.4.0,<5.0.0)",
-    "tensorflow (>=2.20.0,<3.0.0)",
-    "fastdtw (>=0.3.4,<0.4.0)",
-    "ipywidgets (>=8.1.8,<9.0.0)",
     "scikit-learn (>=1.8.0,<2.0.0)"
 ]
 
 [tool.poetry]
 packages = [{include = "src"}]
+
+[tool.poetry.scripts]
+# Network generators
+san-pass = "src.network_generators.pass_networks:main"
+san-match = "src.network_generators.match_networks:main"
+san-player-team = "src.network_generators.player_team_networks:main"
+san-field = "src.network_generators.field_networks:main"
+san-unified = "src.network_generators.unified_pass_network:main"
+san-generate-all = "src.network_generators.generate_all:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
