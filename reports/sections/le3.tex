@@ -110,7 +110,7 @@ Mit der Global view betrachten wir das komplette Netzwerk eines Wettbewerbs , la
 
 \begin{table}[ht]
 \centering
-\caption{Übersicht der konstruierten Netzwerke (Germany; aus \texttt{.gexf} berechnet)}
+\caption{Übersicht der konstruierten Netzwerke ( Bundesliga; aus \texttt{.gexf} berechnet)}
 \label{tab:network_summary}
 \begin{tabular}{lcccc}
 \toprule
@@ -143,9 +143,9 @@ Mit dem Ego-Netzwerke isolieren wir die unmittelbare Umgebung eines Spielers (Eg
 
 
 \subsubsection{Filtern anhand von Kantenattributen}
-Wir setzen Kantenattribut-Filter ein, um "Rauschen" zu reduzieren und stabilere Beziehungen hervorzuheben. Im Pass-Netzwerk ist das zentrale Filterkriterium typischerweise \texttt{pass\_count} (Mindestanzahl Pässe pro Kante); optional sind Filter nach Genauigkeit oder Distanz sinnvoll.
+Wir setzen Kantenattribut-Filter ein, um \enquote{Rauschen} zu reduzieren und stabilere Beziehungen hervorzuheben. Im Pass-Netzwerk ist das zentrale Filterkriterium typischerweise \texttt{pass\_count} (Mindestanzahl Pässe pro Kante); optional sind Filter nach Genauigkeit oder Distanz sinnvoll.
 
-Für Germany zeigt die gewichtsbasierte Filterung (nach Entfernen isolierter Knoten) z.B.:
+Für die Bundesliga zeigt die gewichtsbasierte Filterung (nach Entfernen isolierter Knoten) z.B.:
 \begin{itemize}
   \item $w \geq 5$: 91.1\% Knoten, 71.9\% Kanten erhalten
   \item $w \geq 10$: 85.6\% Knoten, 56.2\% Kanten erhalten
@@ -155,6 +155,6 @@ Für Germany zeigt die gewichtsbasierte Filterung (nach Entfernen isolierter Kno
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.9\linewidth,height=0.36\textheight,keepaspectratio]{figures/LE3/pass_network_filtered.png}
-  \caption{Filterung nach Kantenattribut (Beispiel).}
+  \caption{Filterung nach Kantenattribut}
   \label{fig:le3_edge_attr_filter}
 \end{figure}

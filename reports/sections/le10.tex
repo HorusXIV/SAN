@@ -1,14 +1,205 @@
 \section{LE10 -- Graphlets}
 
-\subsection{Ziel}
-\textit{Welche lokalen Strukturen (Graphlets/Motive) sollen gezählt oder verglichen werden?}
+Dieses Kapitel widmet sich der Analyse von Graphlets in Fussballnetzwerken. Graphlets sind kleine, verbundene Subgraphen mit typischerweise 2 bis 5 Knoten, die feinkörnige strukturelle Muster erfassen, welche traditionelle Metriken oft übersehen. Das Konzept stammt ursprünglich aus der Analyse biologischer Netzwerke (Proteininteraktionen), lässt sich aber generisch auf verschiedene Netzwerktypen anwenden. Wir verwenden Graphlets um (1) die strukturelle Ähnlichkeit ganzer Netzwerke zu vergleichen (Relative Graphlet Frequency Distance, RGFD) und (2) strukturell ähnliche Knoten innerhalb eines Netzwerks zu identifizieren (Graphlet Degree Vectors, GDV).
 
-\subsection{Vorgehen}
+\subsection{Theoretische Grundlagen}
+
+\subsubsection{Graphlets und Orbits}
+
+\textbf{Graphlets:} Graphlets sind alle eindeutigen Kombinationen, wie eine bestimmte Anzahl Knoten miteinander verbunden werden können. Für 2 bis 5 Knoten existieren \textbf{30 verschiedene Graphlets} ($G_0$ bis $G_{29}$). Beispiele:
 \begin{itemize}
-  \item Graphlet-Größe $k$ (z.B. 3--5) und Wahl der Typen
-  \item Zählverfahren / Sampling (falls nötig)
-  \item Normalisierung und Vergleich (z.B. Graphlet Degree Vector, Orbit Counts)
+  \item \textbf{2-Node:} $G_0$ -- eine einzige Kante zwischen zwei Knoten
+  \item \textbf{3-Node:} $G_1$ (Pfad), $G_2$ (Dreieck)
+  \item \textbf{4-Node:} $G_3$ bis $G_8$ -- verschiedene Konfigurationen (Stern, Quadrat, Pfade, etc.)
+  \item \textbf{5-Node:} $G_9$ bis $G_{29}$ -- 21 verschiedene Kombinationen
 \end{itemize}
 
-\subsection{Ergebnisse}
-\textit{Zeige dominante Graphlets, Unterschiede zwischen Subnetzen/Communities oder über Zeit, und interpretiere diese.}
+Je mehr Knoten das Graphlet beinhaltet, desto exponentiell umfangreicher wird die Anzahl möglicher Graphlets.
+
+\textbf{Orbits:} Orbits sind eindeutige, äquivalente Positionen von Knoten in einem Graphlet. Knoten der gleichen Farbe/Position haben dieselbe Orbit-Nummer, weil sie strukturell identisch sind. Insgesamt existieren \textbf{73 unterschiedliche Orbits} über alle 30 Graphlets.
+
+\textbf{Beispiel:} Im Graphlet $G_1$ (3-Node-Pfad) gibt es zwei Orbits:
+\begin{itemize}
+  \item Orbit 1: Die beiden Endknoten (jeweils mit einem Nachbarn verbunden)
+  \item Orbit 2: Der mittlere Knoten (mit beiden anderen verbunden, die nicht miteinander verbunden sind)
+\end{itemize}
+
+\textbf{Nachteil:} Die Berechnung von Graphlets ist sehr aufwändig und in grossen Netzwerken oder bei grossen Graphlet-Knotenzahlen aufgrund der kombinatorischen Explosion nicht praktikabel. Wir beschränken uns daher auf 3- und 4-Node Graphlets.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE10/graphlets_germany_pass.png}\\
+  \includegraphics[width=\linewidth]{figures/LE10/graphlets_france_pass.png}
+  \caption{Graphlet-Häufigkeiten in Pass-Netzwerken. Oben: Germany (Bundesliga), Unten: France (Ligue 1). Balkendiagramme zeigen rechts die absolute Häufigkeit und links die relative häufigkeit für 3-Knoten Graphlets.}
+  \label{fig:le10_graphlets_pass}
+\end{figure}
+
+\subsection{Relative Graphlet Frequency Distance (RGFD)}
+
+Die RGFD ermöglicht den Vergleich der strukturellen Ähnlichkeit von Netzwerken anhand der Graphlet-Verteilung, unabhängig von der Anzahl Knoten und Kanten.
+
+\subsubsection{Methodik}
+
+\textbf{Schritt 1: Graphlet-Zählung}
+
+Für jedes Netzwerk $G$ berechnen wir die Gesamtzahl der Graphlets:
+\[
+T(G) = \sum_{i=1}^{29} N_i(G)
+\]
+wobei $N_i(G)$ die Anzahl der Graphlets mit Nummer $i$ im Netzwerk ist. Das 2-Node Graphlet $G_0$ wird ignoriert.
+
+\textbf{Schritt 2: Normalisierung und Gewichtung}
+
+Für jedes Graphlet $i$ berechnen wir den relativen Anteil mit logarithmischer Gewichtung:
+\[
+F_i(G) = -\log\left(\frac{N_i(G)}{T(G)}\right)
+\]
+Der negative Logarithmus führt dazu, dass \textbf{seltenere Graphlets stärker gewichtet} werden -- sie sind informativer für strukturelle Unterschiede.
+
+\textbf{Schritt 3: Distanzberechnung}
+
+Die Distanz zwischen zwei Netzwerken $G$ und $H$ ist:
+\[
+D(G, H) = \sum_{i=1}^{29} |F_i(G) - F_i(H)|
+\]
+
+\textbf{Interpretation:} Kleinere $D(G,H)$-Werte bedeuten strukturell ähnlichere Netzwerke.
+
+\subsubsection{Anwendung auf Pass-Netzwerke}
+
+Wir vergleichen die Pass-Netzwerke von Germany (Bundesliga) und France (Ligue 1) basierend auf ihrer Graphlet-Struktur.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE10/rgfd_pass_comparison.png}
+  \caption{Graphlet Distribution Comparison für Pass-Netzwerke (Germany vs. France). Gezeigt sind die relativen Anteile zweier Graphlet-Typen G1 und G2 in beiden Netzwerken. Der RGFD (Relative Graphlet Frequency Distance) beträgt 0.012, was auf eine sehr ähnliche strukturelle Komposition der beiden Pass-Netzwerke hindeutet. Germany (blau) und France (orange) zeigen nahezu identische Graphlet-Verteilungen.}
+  \label{fig:le10_rgfd_pass}
+\end{figure}
+
+\textbf{Beobachtungen Pass-Netzwerke:}
+\begin{itemize}
+  \item \textbf{Nahezu identische Verteilung:} Beide Netzwerke zeigen bei G1 etwa 40\% und bei G2 etwa 60\% Anteil. Die Balken für Germany (blau) und France (orange) sind praktisch deckungsgleich.
+  \item \textbf{G2 dominiert:} Mit ca. 60\% ist G2 der dominante Graphlet-Typ in beiden Netzwerken, was auf ähnliche strukturelle Muster in den Pass-Interaktionen hindeutet.
+  \item \textbf{Minimale Unterschiede:} Die visuell kaum erkennbaren Unterschiede zwischen den beiden Ländern spiegeln sich im sehr niedrigen RGFD-Wert wider.
+\end{itemize}
+
+\textbf{RGFD-Resultat:} Die berechnete Distanz $D(\text{Germany}, \text{France}) = 0.012$ zeigt eine extrem hohe strukturelle Ähnlichkeit. Dies bedeutet, dass beide Pass-Netzwerke nicht nur ähnliche grundlegende Strukturen aufweisen, sondern auch in der relativen Häufigkeit der Graphlet-Typen nahezu identisch sind. Der niedrige RGFD-Wert deutet darauf hin, dass Deutschland und Frankreich vergleichbare taktische Pass-Muster verwenden.
+
+\subsubsection{Anwendung auf Match-Netzwerke}
+
+Match-Netzwerke (Team--Team) sind deutlich kleiner und dichter als Pass-Netzwerke, was zu unterschiedlichen Graphlet-Profilen führt. Zudem haben wir aus diesem Grund auch die 4-Knoten Graphlets mit untersucht.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE10/rgfd_match_comparison.png}
+  \caption{Graphlet Distribution Comparison für Match-Netzwerke (Germany vs. France). Gezeigt sind die relativen Anteile von 8 Graphlet-Typen (G1-G8). Der RGFD-Wert von 0.125 zeigt moderate strukturelle Unterschiede. Besonders auffällig: G2 zeigt einen sichtbaren Unterschied (Germany ca. 21\%, France ca. 19\%), während G8 mit ca. 80\% in beiden Netzwerken stark dominiert. Die meisten Graphlet-Typen (G1, G3-G7) kommen praktisch nicht vor.}
+  \label{fig:le10_rgfd_match}
+\end{figure}
+
+\textbf{Beobachtungen Match-Netzwerke:}
+\begin{itemize}
+  \item \textbf{Extreme Dominanz von G8:} Mit ca. 80\% ist G8 der mit Abstand häufigste Graphlet-Typ in beiden Netzwerken. Dies deutet auf eine spezifische strukturelle Eigenschaft der Match-Netzwerke hin.
+  \item \textbf{Geringe Diversität:} Nur zwei Graphlet-Typen (G2 und G8) sind nennenswert präsent. Die Typen G1, G3-G7 kommen praktisch nicht vor (< 1\%), was auf eine sehr spezifische, homogene Netzwerkstruktur hindeutet.
+  \item \textbf{Sichtbare Unterschiede bei G2:} Germany zeigt bei G2 einen leicht höheren Anteil (ca. 21\%) als France (ca. 19\%). Dies ist der einzige visuell erkennbare strukturelle Unterschied zwischen den beiden Netzwerken.
+  \item \textbf{RGFD-Wert:} $D(\text{Germany}, \text{France}) = 0.125$ -- etwa 10× höher als bei den Pass-Netzwerken (0.012). Dies zeigt moderate strukturelle Unterschiede, hauptsächlich getrieben durch die Differenz bei G2.
+\end{itemize}
+
+\textbf{Interpretation:} Die starke Dominanz von G8 und das nahezu vollständige Fehlen anderer Graphlet-Typen reflektieren die spezielle Struktur von Match-Netzwerken. Im Gegensatz zu Pass-Netzwerken, wo verschiedene taktische Muster zu diverseren Graphlet-Verteilungen führen, sind Match-Netzwerke strukturell homogener. Der dennoch höhere RGFD-Wert im Vergleich zu Pass-Netzwerken deutet darauf hin, dass kleine Unterschiede in der Turnier- oder Spielstruktur (z.B. unterschiedliche Gegner, Spielhäufigkeiten) zu messbaren topologischen Differenzen führen können.
+
+\subsection{Graphlet Degree Vectors (GDV)}
+
+GDVs ermöglichen die Identifikation strukturell ähnlicher Knoten \textit{innerhalb} eines Netzwerks, unabhängig von deren Position im Netzwerk.
+
+\subsubsection{Methodik}
+
+\textbf{Konzept:} Für jeden Knoten $v$ erstellen wir einen Vektor, der zählt, wie oft $v$ jede Orbit-Position einnimmt.
+
+\textbf{Berechnung:}
+\begin{enumerate}
+  \item Identifiziere alle Graphlets im Netzwerk, die Knoten $v$ enthalten
+  \item Für jedes Graphlet: bestimme, welche Orbit-Position $v$ einnimmt
+  \item Erstelle Vektor: GDV$(v) = (o_0, o_1, \ldots, o_k)$, wobei $o_i$ die Häufigkeit von Orbit $i$ ist
+\end{enumerate}
+
+\textbf{Beispiel:} Für 3- und 4-Node Graphlets hat ein GDV 15 Dimensionen (entsprechend den 15 Orbits in $G_1$ bis $G_8$).
+
+\textbf{Interpretation:} Knoten mit ähnlichen GDVs haben ähnliche lokale Strukturen -- sie spielen ähnliche ``Rollen'' im Netzwerk.
+
+\subsubsection{Anwendung: Strukturelle Rollen in Pass-Netzwerken}
+
+Wir berechnen GDVs für alle Spieler im Pass-Netzwerk und reduzieren die Dimensionalität mit t-SNE zur Visualisierung.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.34\textheight,keepaspectratio]{figures/LE10/gdv_tsne_germany.png}
+  \caption{t-SNE Visualisierung der GDVs (Germany Pass-Netzwerk). Punkte repräsentieren Spieler, Nähe im 2D-Raum indiziert strukturelle Ähnlichkeit. Farben zeigen Cluster strukturell ähnlicher Spieler.}
+  \label{fig:le10_tsne_germany}
+\end{figure}
+
+\textbf{Beobachtungen Germany:}
+\begin{itemize}
+  \item \textbf{Degree-basierte Cluster:} Klare Separation von niedrigen Degrees (lila, links oben) über mittlere (türkis, zentral) zu hohen Degrees (gelb/grün, rechts)
+  \item \textbf{Highlighted Nodes:} 4 rot/schwarze Sterne markieren Schlüsselspieler -- 3 davon bilden einen engen Cluster rechts oben (hohe Degrees), 1 isoliert oben mittig
+  \item \textbf{Strukturelle Rollen:} Linker Cluster repräsentiert Spieler mit einfachen Pass-Strukturen, rechter Bereich zeigt zentrale Spieler mit vielfältigen Verbindungen
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.34\textheight,keepaspectratio]{figures/LE10/gdv_heatmap_germany.png}
+  \caption{GDV Heatmap für 20 ausgewählte Spieler (Germany). Zeigt normalisierte Orbit-Frequenzen für 3-Node Graphlets (4 Orbits): Orbit 0 (Degree), Orbit 1 (Path End), Orbit 2 (Path Center), Orbit 3 (Triangle). Orbit 3 dominiert (0.56-0.86, dunkelrot), während Orbit 0 konstant niedrig bleibt (0.02-0.03). Zwei Spieler-Gruppen erkennbar: obere Zeilen mit höheren Orbit 2-Werten, untere Zeilen mit höheren Orbit 3-Werten.}
+  \label{fig:le10_heatmap}
+\end{figure}
+
+\subsubsection{Vergleich: Germany vs. France}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.45\linewidth]{figures/LE10/gdv_tsne_germany.png}
+  \hfill
+  \includegraphics[width=0.45\linewidth]{figures/LE10/gdv_tsne_france.png}
+  \caption{t-SNE GDV-Vergleich. Links: Germany, Rechts: France. Beide zeigen ähnliche Cluster-Strukturen, aber unterschiedliche Verteilungen.}
+  \label{fig:le10_tsne_comparison}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.34\textheight,keepaspectratio]{figures/LE10/gdv_roles_comparison.png}
+  \caption{Vergleich struktureller Rollen zwischen Germany und France. Zeigt durchschnittliche GDV-Profile für verschiedene Spieler-Cluster.}
+  \label{fig:le10_roles}
+\end{figure}
+
+\textbf{Kernerkenntnisse:}
+\begin{enumerate}
+  \item \textbf{Dominanz peripherer Rollen:} Beide Netzwerke werden von Peripheral-Nodes dominiert (Germany: 170, France: 129), was auf spezialisierte Positionsspieler hindeutet
+  \item \textbf{Strukturelle Unterschiede:} Germany zeigt eine stärkere Zentralisierung mit mehr Hub-Nodes (56 vs. 40) und Clustered-Nodes (57 vs. 46), während Bridge-Nodes in beiden Ligen fehlen
+  \item \textbf{Räumliche Verteilungsmuster:} Die t-SNE-Projektionen zeigen bei Germany eine kompaktere Clusterbildung (linke obere Region) mit deutlich isolierten Ausreissern, während France eine fragmentiertere Verteilung über mehrere Cluster aufweist
+  \item \textbf{Taktische Implikationen:} Germanys höhere Hub-Dichte deutet auf zentralisierte Spielaufbaustrukturen hin, Francesausgewogenere Verteilung auf flexiblere, verteilte Passsysteme
+\end{enumerate}
+
+\subsection{Praktische Anwendungen und Fazit}
+
+\subsubsection{Anwendungen von Graphlets im Fussball}
+
+\textbf{RGFD (Netzwerkvergleich):} Objektive Quantifizierung struktureller Ähnlichkeiten zwischen Ligen und Teams, Gegneranalyse und taktisches Benchmarking unabhängig von Netzwerkgrösse.
+
+\textbf{GDV (Spielerrollen):} Identifikation strukturell äquivalenter Spieler für Transfermarkt und Taktik, positionsunabhängige Rollen-Erkennung.
+
+\textbf{Musteranalyse:} Erfassung lokaler Strukturen (Dreiecke, Sterne, Pfade), die globale Metriken übersehen.
+
+\subsubsection{Stärken und Limitationen}
+
+\textbf{Stärken:} Feinkörnige lokale Strukturerfassung, grössenunabhängiger Netzwerkvergleich, positionsunabhängige Ähnlichkeitsmessung.
+
+\textbf{Limitationen:} Kombinatorische Explosion bei >5 Knoten, hohe Komplexität (73 Orbits), statische Betrachtung ohne zeitliche Dynamik, Standardmethode ignoriert Passrichtungen.
+
+\subsubsection{Zusammenfassung der Ergebnisse}
+
+\textbf{Pass-Netzwerke:} RGFD von 0.012 zeigt extreme strukturelle Ähnlichkeit zwischen Germany und France. G2-Dominanz (ca. 60\%) deutet auf kohärente Pass-Dreiecke hin. Germany zeigt stärkere Zentralisierung (56 vs. 40 Hub-Nodes), France distribuiertere Systeme. Beide Ligen besitzen ähnliche strukturelle Rollen mit unterschiedlichen Verteilungen.
+
+\textbf{Match-Netzwerke:} RGFD von 0.125 (10× höher) zeigt moderate Unterschiede. G8-Dominanz (ca. 80\%) reflektiert homogene Turnier-Strukturen mit geringer Diversität. Unterschiede primär durch Turnier-Format getrieben.
+
+\subsubsection{Fazit}
+
+Graphlets ermöglichen komplementäre Analysen zu klassischen Metriken durch Erfassung lokaler topologischer Muster. Die Kombination von RGFD (Netzwerk-zu-Netzwerk) und GDV (Knoten-zu-Knoten) liefert objektive Metriken für taktische System-Vergleiche und Spieler-Identifikation.
+
+\textbf{Forschungsperspektiven:} Gerichtete und gewichtete Graphlets, temporale Analysen über Spielverlauf, GDV-basiertes maschinelles Lernen für Performance-Vorhersagen.

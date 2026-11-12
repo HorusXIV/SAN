@@ -1,20 +1,275 @@
 \section{LE9 -- Diffusion}
 
-\subsection{Ziel}
-\textit{Welche Diffusionsprozesse werden modelliert oder simuliert? (Information, Krankheit, Adoption, ...)}
+Dieses Kapitel widmet sich der Modellierung von Diffusionsprozessen in Fussballnetzwerken. Diffusion bezeichnet die Verbreitung von Informationen, Verhaltensweisen oder taktischen Entscheidungen über Interaktionen im Netzwerk -- von initialen Sendern zu den finalen Empfängern. Im Kontext von Fussballdaten können wir damit analysieren, wie sich taktische Innovationen durch Spielernetzwerke verbreiten, welche Spieler den grössten Einfluss auf die Teamdynamik haben, und wie sich Ballbesitz über das Team hinweg ausbreitet. Wir implementieren drei Diffusionsmodelle und wenden sie auf Pass-Netzwerke der Bundesliga (Germany) und Ligue 1 (France) an. Im Umfang von diesem LE wurde nur mit dem jeweilig grössten Connected Component gearbeitet. Diese haben für beide Netzwerke immer noch über 200 Knoten.
 
-\subsection{Modelle}
+\subsection{Theoretische Grundlagen}
+
+\subsubsection{Rogers' Innovationsdiffusionstheorie}
+
+Der amerikanische Soziologe Everett Rogers veröffentlichte 1962 seine einflussreiche Theorie zur Verbreitung von Innovationen \cite{karnowski_diffusion_2016}. Er teilt Personen anhand ihres Adoptionsverhaltens in fünf Gruppen ein: \textbf{Innovators (2.5\%)}, \textbf{Early Adopters (13.5\%)}, \textbf{Early Majority (34\%)}, \textbf{Late Majority (34\%)} und \textbf{Laggards (16\%)}. Die kumulative Adoptionskurve folgt einem charakteristischen S-Kurvenverlauf.
+
+\textbf{Modellierungsaspekte:} Bei der Modellierung unterscheiden wir zwischen lokaler Abhängigkeit (nur direkte Nachbarn beeinflussen) und globaler Abhängigkeit (alle Netzwerkmitglieder). Zusätzlich können externe Faktoren (z.B. Medien, Trainer) die Diffusion beeinflussen.
+
+\subsection{Independent Cascade Model (ICM)}
+
+Das Independent Cascade Model wurde 2003 von David Kempe et al. vorgestellt \cite{arxiv_2024} und modelliert ursprünglich die Verbreitung von Informationen oder Verhalten in sozialen Netzwerken. In unserer Arbeit adaptieren wir das ICM für Fussball-Passnetzwerke, um zu analysieren, wie taktische Ideen, Spielzüge oder Ballbesitz sich über ein Team verbreiten könnten.
+
+\textbf{Kernannahmen:}
+\begin{enumerate}
+  \item Ein Spieler kann nur direkte Passpartner aktivieren (Kantenrichtung relevant)
+  \item Binärer Zustand: aktiv (involviert) oder inaktiv
+  \item Einmalige Aktivierungschance pro Spieler
+  \item Monotone Diffusion (nur Wechsel inaktiv $\rightarrow$ aktiv)
+\end{enumerate}
+
+\textbf{Algorithmus:}
+\begin{enumerate}
+  \item \textbf{Initialisierung:} Gerichtetes Passnetzwerk $G = (V, E)$; Aktivierungswahrscheinlichkeiten $p_{i,j}$; Seed-Set $A$
+  \item \textbf{Iteration:} Für jeden $i \in A$ und inaktiven Nachbarn $j$: Generiere $r \sim \mathcal{U}(0,1)$; falls $r < p_{i,j}$: aktiviere $j$
+  \item \textbf{Abbruch:} Stopp wenn keine Neuaktivierungen, sonst $A \leftarrow A_{\text{neu}}$
+\end{enumerate}
+
+\textbf{Aktivierungswahrscheinlichkeiten:}\\
+Wir verwenden normalisierte Passfrequenzen:
+\[
+p_{i,j} = \frac{w_{i,j}}{\max(W)} \cdot \alpha
+\]
+wobei $w_{i,j}$ die Passanzahl und $\alpha = 0.1$ der Skalierungsfaktor ist. Häufigere Passverbindungen führen zu höheren Aktivierungswahrscheinlichkeiten.
+
+\subsubsection{Influence Maximization}
+
+\textbf{Problemstellung:}\\
+Finde $k$ Seed-Spieler, die die erwartete Reichweite maximieren:
+\[
+\max_{|S|=k} \mathbb{E}[f(S)]
+\]
+wobei $f(S)$ die Anzahl aktivierter Spieler bezeichnet.
+
+\textbf{Greedy-Algorithmus:}\\
+Iterativ den Spieler mit grösstem Marginalgewinn wählen:
+\begin{enumerate}
+  \item Start: $S = \emptyset$
+  \item Für $i = 1, \ldots, k$: Wähle $v^* = \arg\max_{v \notin S} \mathbb{E}[f(S \cup \{v\})]$ und setze $S \leftarrow S \cup \{v^*\}$
+\end{enumerate}
+
+Approximation des Erwartungswerts durch Monte-Carlo-Simulationen ($N = 1000$ Runs):
+\[
+\mathbb{E}[f(S)] \approx \frac{1}{N} \sum_{i=1}^{N} f_i(S)
+\]
+
+\textbf{Vergleichsstrategien:}
 \begin{itemize}
-  \item SI/SIR/SIS oder Threshold/Independent Cascade
-  \item Parameter (Infektionsrate, Recovery, Schwellen)
-  \item Seed-Strategien (zufällig, hochgradig, zentral nach LE5)
+  \item \textit{Random:} Zufällige Auswahl von $k$ Spielern
+  \item \textit{High Out-Degree:} Spieler mit meisten ausgehenden Pässen
+  \item \textit{High In-Degree:} Spieler mit meisten eingehenden Pässen
+  \item \textit{High Betweenness:} Spieler auf kürzesten Pfaden im Netzwerk
 \end{itemize}
 
-\subsection{Simulation \& Auswertung}
+\textbf{Limitationen:} Monotonie-Annahme ignoriert Auswechslungen; einmaliger Aktivierungsversuch vernachlässigt wiederholte Interaktionen; keine temporale oder graduelle Dynamik.
+
+\subsubsection{Vergleich: Germany vs. France}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE9/icm_strategies_pass_France.png}
+  \caption{Vergleich von Seed-Strategien für ICM-Diffusion im französischen Pass-Netzwerk. Links: Mittlere Anzahl aktivierter Knoten mit Standardabweichung für vier verschiedene Strategien (Random, High Out-Degree, High In-Degree, High Betweenness). Rechts: Verteilung der erreichten Knotenzahlen als Box-Plots mit Ausreissern. Alle Strategien zeigen vergleichbare Performance mit ähnlichen Streuungen.}
+  \label{fig:le9_icm_france}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE9/icm_strategies_pass_Germany.png}
+  \caption{Vergleich von Seed-Strategien für ICM-Diffusion im deutschen Pass-Netzwerk. Links: Mittlere Anzahl aktivierter Knoten mit Standardabweichung für vier verschiedene Strategien (Random, High Out-Degree, High In-Degree, High Betweenness). Rechts: Verteilung der erreichten Knotenzahlen als Box-Plots mit Ausreissern. Alle Strategien zeigen vergleichbare Performance mit ähnlichen Streuungen.}
+  \label{fig:le9_icm_germany}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.34\textheight,keepaspectratio]{figures/LE9/greedy_comparison_ger_vs_fra.png}
+  \caption{Direkter Vergleich Germany vs. France: Greedy Influence Maximization. Zeigt finale Reichweite als Funktion der Seed-Grösse $k$ für beide Netzwerke.}
+  \label{fig:le9_greedy}
+\end{figure}
+
+\textbf{Beobachtungen:}
+
+\textbf{Greedy-Algorithmus (Abbildung~\ref{fig:le9_greedy}):}
 \begin{itemize}
-  \item Mehrere Läufe und Unsicherheit
-  \item Messgrößen: Endgröße, Geschwindigkeit, Reach, Time-to-\dots
+  \item Linearer Anstieg der Reichweite mit $k$ in beiden Netzwerken
+  \item France erreicht höhere absolute Werte (8.9 vs. 8.5 Knoten bei $k=5$), aber vergleichbare relative Effizienz (1.64\% vs. 1.80\% Netzwerkdurchdringung pro Seed)
+  \item Germany zeigt steileren Anstieg bei kleinem $k$, was auf konzentrierte Einflusszentren hindeutet
 \end{itemize}
 
-\subsection{Ergebnisse}
-\textit{Vergleiche Modelle/Parameter und diskutiere Implikationen.}
+\textbf{Strategievergleich (Abbildung~\ref{fig:le9_icm_france} \& \ref{fig:le9_icm_germany}):}
+\begin{itemize}
+  \item Alle Strategien erreichen ähnliche mittlere Reichweiten (Germany: $\approx 3.5$ Knoten, France: 3.1--3.6 Knoten)
+  \item Hohe Streuung mit Ausreissern bis 8 Knoten zeigt die Stochastizität des ICM
+  \item Geringe Differenzierung zwischen Random-, Degree- und Betweenness-Strategien deutet auf homogene Netzwerkstrukturen hin
+  \item In France übertrifft Betweenness leicht Random-Auswahl; in Germany sind Unterschiede vernachlässigbar
+\end{itemize}
+
+\textbf{Implikationen:}
+\begin{itemize}
+  \item Einfache Degree-Heuristiken sind nahezu gleichwertig mit komplexeren Betweenness-Berechnungen
+  \item Greedy-Algorithmus liefert signifikant bessere Ergebnisse, erfordert aber höheren Rechenaufwand ($O(k \cdot n \cdot m)$ vs. $O(n+m)$ für Zentralitätsmetriken)
+  \item Monte-Carlo-Simulationen mit 1000 Runs notwendig für robuste Schätzungen aufgrund hoher Varianz
+\end{itemize}
+
+\subsection{Voter Model}
+
+Das Voter Model ist ein einfaches Diffusionsmodell, das auf randomisierten Imitationsprozessen basiert. Jeder Knoten hat initial eine Meinung +1 (übernommen) oder $-1$ (nicht übernommen). In jeder Iteration wird ein zufälliger Knoten gewählt, der die Meinung eines zufälligen Nachbarn übernimmt. Der Prozess läuft bis ein Konsens erreicht ist.
+
+\textbf{Algorithmus:}
+\begin{enumerate}
+  \item Initialisiere Meinungen: Anteil $\alpha$ der Knoten erhält +1, Rest erhält $-1$
+  \item Wiederhole bis Konsens:
+  \begin{itemize}
+    \item Wähle zufälligen Knoten $v$
+    \item Wähle zufälligen Nachbar $u$ von $v$
+    \item Setze Meinung von $v$ auf Meinung von $u$
+  \end{itemize}
+  \item Rückgabe: finale Meinung (alle Knoten haben denselben Wert)
+\end{enumerate}
+
+\textbf{Wichtige Eigenschaft:} Die Wahrscheinlichkeit, dass am Ende alle Knoten +1 annehmen, entspricht theoretisch dem \textbf{relativen Anteil} der Knoten, die initial +1 hatten. Dies folgt aus der Martingal-Eigenschaft des Prozesses.
+
+\textbf{Fussball-Interpretation:} Das Voter Model kann die Verbreitung taktischer Stile modellieren. Spieler übernehmen durch Passinteraktionen zufällig die taktischen Entscheidungen ihrer Mitspieler, bis sich das gesamte Team auf einen einheitlichen Spielstil einigt.
+
+\textbf{Limitationen:} Das Modell berücksichtigt keine unterschiedlichen Einflüsse (z.B. Kapitän vs. Rookie), keine Resistenz gegen Meinungsänderung und keine strategische Seed-Auswahl wie beim ICM.
+
+\textbf{Beobachtungen aus den Simulationen:}
+\begin{itemize}
+  \item \textbf{Konsensrate:} Germany erreicht in 27\% der Simulationen einen Konsens (2\% für +1, 25\% für $-1$), France in 47\% der Simulationen (6\% für +1, 41\% für $-1$). Die Konsensraten weichen deutlich von der theoretischen Erwartung ab, was auf die begrenzte Anzahl an Iterationen (50'000) zurückzuführen ist.
+  \item \textbf{Konvergenzgeschwindigkeit:} France erreicht häufiger einen Konsens als Germany (47\% vs. 27\%), dies könnte auch an der Grösse liegen, da Frankreich kleiner ist. Dies deutet auf strukturelle Unterschiede hin -- das französische Netzwerk könnte dichter oder besser verbunden sein, was schnellere Konvergenz ermöglicht.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE9/voter_model_undirected_comparison.png}
+  \caption{Voter Model Evolution Germany vs. France (ungerichtetes Netzwerk). Beide Länder starten mit 30\% initialen +1 Meinungen. Die durchschnittliche Meinung entwickelt sich über 5000 Iterationen. Germany konvergiert gegen $-1$, France zeigt ebenfalls eine Tendenz zu $-1$, jedoch mit mehr Schwankungen.}
+  \label{fig:le9_voter}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{Dominante Meinung:} In beiden Ländern dominiert die $-1$ Meinung (nicht übernommen) deutlich, wenn ein Konsens erreicht wird. Dies entspricht der Mehrheit der initialen Meinungen (70\% $-1$).
+  \item \textbf{Iterationen bis Konsens:} Germany benötigt durchschnittlich 27'931 Iterationen, France 26'254 Iterationen. Der Unterschied ist gering, aber France konvergiert tendenziell etwas schneller, trotz mehr Knoten.
+  \item \textbf{Netzwerkgrösse vs. Konvergenz:} Das kleinere französische Netzwerk (215 Knoten) erreicht häufiger Konsens als das deutsche (283 Knoten). Dies widerspricht der Erwartung, dass grössere Netzwerke langsamer konvergieren, und legt nahe, dass die Netzwerkstruktur wichtiger ist als die reine Grösse.
+\end{itemize}
+
+\subsection{Threshold Model}
+
+Das Threshold Model basiert auf Peer Pressure: Knoten übernehmen ein Verhalten, wenn ein kritischer Anteil ihrer Nachbarn das Verhalten bereits angenommen hat. Jeder Knoten hat einen persönlichen Schwellwert $\theta_v \in [0,1]$, der seine Resistenz gegen Änderungen repräsentiert.
+
+\textbf{Algorithmus:}
+\begin{enumerate}
+  \item Initial: Menge $S$ aktivierter Knoten (Seeds); alle anderen Knoten haben Schwellwerte $\theta_v$
+  \item Iterativ für alle inaktiven Knoten $v$:
+  \begin{itemize}
+    \item Berechne $\rho_v = |\{u \in N(v) : u \text{ aktiv}\}| / |N(v)|$
+    \item Falls $\rho_v \geq \theta_v$: aktiviere $v$
+  \end{itemize}
+  \item Wiederhole bis keine neuen Aktivierungen
+\end{enumerate}
+
+\textbf{Kernmerkmale:} Der Prozess ist \textbf{deterministisch} bei festen Schwellwerten und Aktivierungen sind \textbf{irreversibel}. Im Gegensatz zum ICM zählen nicht individuelle Aktivierungswahrscheinlichkeiten, sondern der kollektive Druck der Nachbarschaft.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE9/threshold_cascade_germany.png}\\
+  \includegraphics[width=\linewidth]{figures/LE9/threshold_cascade_france.png}
+  \caption{Threshold Model Cascades mit uniform zufälligen Schwellwerten. Oben: Germany aktiviert 54 Knoten in 8 Iterationen. Unten: France aktiviert 43 Knoten in 7 Iterationen. Die kumulative Aktivierung zeigt den S-Kurven-Verlauf typischer Diffusionsprozesse.}
+  \label{fig:le9_threshold_cascade}
+\end{figure}
+
+\subsubsection{Sensitivitätsanalyse: Einfluss des Schwellwerts}
+
+Der Schwellwert $\theta$ bestimmt massgeblich die finale Ausbreitung. Bei uniform verteilten Schwellwerten reagiert das System extrem sensitiv auf Änderungen.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.47\linewidth]{figures/LE9/threshold_sensitivity_germany.png}
+  \hfill
+  \includegraphics[width=0.47\linewidth]{figures/LE9/threshold_sensitivity_france.png}
+  \caption{Threshold Sensitivitätsanalyse bei festen Schwellwerten (alle Knoten haben denselben $\theta$). Links: Germany, Rechts: France. Die Reichweite bricht nach $\theta \approx 0.2$ dramatisch ein.}
+  \label{fig:le9_threshold_sensitivity}
+\end{figure}
+
+\textbf{Beobachtungen:}
+\begin{itemize}
+  \item \textbf{Kritischer Schwellwert:} Bei $\theta = 0.0$ (kein Widerstand) erreichen beide Netzwerke 100\% Penetration. Ab $\theta \geq 0.2$ kollabiert die Diffusion fast vollständig auf 1.1-1.8\% Reichweite.
+  \item \textbf{Binäres Verhalten:} Es existiert ein scharfer Phasenübergang zwischen vollständiger Ausbreitung ($\theta < 0.2$) und nahezu vollständigem Stillstand ($\theta \geq 0.2$). Dieser kritische Punkt liegt bei beiden Netzwerken ähnlich.
+  \item \textbf{Germany vs. France:} Bei $\theta = 0.2$ zeigt France (1.4\%) leicht höhere Reichweite als Germany (1.1\%). Bei moderaten Schwellwerten sind die Unterschiede jedoch minimal -- die Netzwerkstruktur scheint weniger wichtig als der Schwellwert selbst.
+  \item \textbf{Cascade Progression:} Bei uniform zufälligen Schwellwerten (Abbildung~\ref{fig:le9_threshold_cascade}) zeigt Germany eine grössere finale Reichweite (54 vs. 43 Knoten) trotz mehr Iterationen. Dies deutet auf eine dichtere lokale Struktur hin.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE9/threshold_germany_vs_france.png}
+  \caption{Direkter Vergleich Germany vs. France im Threshold Model. Linke Grafik: Cascade Progression mit uniform zufälligen Schwellwerten -- Germany erreicht höhere absolute Aktivierung. Rechte Grafik: Sensitivitätsanalyse zeigt nahezu identisches Verhalten bei festen Schwellwerten.}
+  \label{fig:le9_threshold_comparison}
+\end{figure}
+
+\textbf{Implikationen für Fussball-Netzwerke:} Die extreme Sensitivität gegenüber Schwellwerten zeigt, dass taktische Innovationen schnell scheitern können, wenn zu viele Spieler skeptisch sind. Ein kritischer Anteil von Frühadoptern ($\theta < 0.2$) ist essentiell für erfolgreiche Diffusion. Die Ähnlichkeit zwischen Germany und France deutet darauf hin, dass bei Peer-Pressure-Mechanismen die individuelle Überzeugbarkeit wichtiger ist als die Netzwerkstruktur.
+
+\subsection{Modellvergleich und Synthese}
+
+Die drei Diffusionsmodelle erfassen unterschiedliche Aspekte der Informationsverbreitung:
+
+\begin{table}[htbp]
+\centering
+\caption{Vergleich der Diffusionsmodelle}
+\label{tab:le9_model_comparison}
+\begin{tabular}{llll}
+\toprule
+\textbf{Eigenschaft} & \textbf{ICM} & \textbf{Voter Model} & \textbf{Threshold} \\
+\midrule
+Aktivierung & Probabilistisch & Iterativ-zufällig & Deterministisch \\
+Reversibilität & Irreversibel & Reversibel & Irreversibel \\
+Einfluss & Individuell & Binär (Imitation) & Kollektiv (Anteil) \\
+Seed-Opt. & Ja (Greedy) & Nein & Ja \\
+Fussball & Pass-Weiterleitung & Taktik-Imitation & Gruppendruck \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE9/final_germany_vs_france_comparison.png}
+  \caption{Finaler Vergleich Germany vs. France über alle drei Diffusionsmodelle. Normalisierte Reichweite (als Anteil des Netzwerks) für ICM, Voter Model und Threshold Model.}
+  \label{fig:le9_final}
+\end{figure}
+
+\textbf{Kernerkenntnisse:}
+\begin{enumerate}
+  \item \textbf{Netzwerkstruktur beeinflusst Diffusion:}
+  \begin{itemize}
+    \item Germany: Effizientere lokale Cluster, schnellere Verbreitung bei kleinen Seeds
+    \item France: Grössere Reichweite absolut, aber langsamere relative Penetration
+  \end{itemize}
+  \item \textbf{Modellspezifische Unterschiede:}
+  \begin{itemize}
+    \item \textbf{ICM:} Stark abhängig von Seed-Qualität; Greedy-Optimierung essentiell
+    \item \textbf{Voter Model:} Seed-Position irrelevant; nur initialer Anteil bestimmt finalen Konsens
+    \item \textbf{Threshold Model:} Hochsensitiv auf Schwellwert; kritische Übergänge beobachtbar
+  \end{itemize}
+  \item \textbf{Praktische Implikationen für Fussball:}
+  \begin{itemize}
+    \item Zentrale Spieler (hoher Degree, Betweenness) sind kritisch für taktische Innovationen
+    \item Teams mit dichterer Pass-Vernetzung verbreiten Spielstile schneller
+    \item Schwellwert-Effekte erklären, warum manche taktische Änderungen scheitern
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Fazit}
+
+Unsere Analyse von Diffusionsprozessen in Fussballnetzwerken zeigt wichtige Erkenntnisse über die Verbreitung von Informationen und taktischen Entscheidungen:
+
+\textbf{Modellspezifische Erkenntnisse:}
+\begin{itemize}
+  \item \textbf{ICM:} Geeignet für Pass-Weiterleitungen und kurzfristige taktische Entscheidungen. Greedy-Algorithmus identifiziert effektiv einflussreiche Schlüsselspieler. Stark abhängig von Seed-Qualität und Aktivierungswahrscheinlichkeiten.
+  \item \textbf{Voter Model:} Erfasst langfristige Konvergenz zu einheitlichen Spielstilen. Zeigt, dass finale Team-Taktik durch initialen Anteil adoptierender Spieler vorhergesagt werden kann. Seed-Position ist irrelevant -- nur der Anteil zählt.
+  \item \textbf{Threshold Model:} Modelliert Gruppendruck und kollektive Entscheidungen. Kritische Schwellwerte erklären abrupte taktische Übergänge oder das Scheitern von Innovationen. Hochsensitiv auf Schwellwert-Wahl.
+\end{itemize}
+
+\textbf{Ländervergleich:} Germany und France zeigen strukturell unterschiedliche Diffusionsdynamiken. Germany profitiert von effizienten lokalen Clustern und schnellerer Verbreitung bei kleinen Seeds. France hat grössere absolute Reichweite aufgrund der Netzwerkgrösse.
+
+\textbf{Limitationen:} Vereinfachte Annahmen (reale Einflussnahme ist komplexer mit unterschiedlichen Spielerrollen und Autoritäten), statische Netzwerke (Pass-Netzwerke ändern sich über Saison durch Verletzungen und Transfers), binäre Zustände (reale Adoption hat Grade), fehlende Validierung (Ground-Truth-Daten zu realen Diffusionsprozessen fehlen).

@@ -5,8 +5,8 @@ Network analysis of professional soccer match data using spatio-temporal event d
 ## Authors
 
 - Lukas Breiter
-- Gian Truttman
-- Jessica Schmied
+- Gian Truttmann
+- Jessica Schmid
 
 ## Overview
 

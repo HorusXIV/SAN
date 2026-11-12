@@ -1,22 +1,207 @@
-\section{LE8 -- Link Prediction}
+\section{LE8 -- Link-Prediction}
 
-\subsection{Ziel}
-\textit{Welche Kanten sollen vorhergesagt werden (zeitlich oder als fehlende Links)?}
+Dieses Kapitel widmet sich der Link-Prediction in Fussballnetzwerken -- einem Verfahren, das auf Basis der aktuellen Netzwerkstruktur vorhersagt, welche Kanten sich in naher Zukunft wahrscheinlich bilden werden. Wir wenden Link-Prediction-Algorithmen auf Pass- und Match-Netzwerke an und vergleichen deren Vorhersagen systematisch.
 
-\subsection{Features / Heuristiken}
+\subsection{Algorithmen zur Link-Prediction}
+
+Link-Prediction-Algorithmen basieren auf Nachbarschaftsanalyse. Wir verwenden die Nachbarschaftsfunktion $N(v)$ für die Menge aller direkten Nachbarn eines Knotens $v$.
+
+\subsubsection{Common Neighbours}
+
+Common Neighbours zählt für zwei nicht verbundene Knoten die Anzahl gemeinsamer Nachbarn.
+
+\textbf{Intuition:} Basiert auf \textit{Triadic Closure} -- Spieler, die zu denselben Mitspielern passen, könnten in Zukunft direkt zueinander passen.
+
+\textbf{Formel:}
+\begin{equation}
+common\_neighbours(X, Y) = |N(X) \cap N(Y)|
+\label{eq:cn}
+\end{equation}
+
+\textbf{Beispiel:} Für $N(A) = \{B, D, E\}$ und $N(C) = \{B, D, F\}$: $common\_neighbours(A, C) = 2$.
+
+\subsubsection{Jaccard Coefficient}
+
+Jaccard normalisiert Common Neighbours durch die Gesamtzahl aller Nachbarn.
+
+\textbf{Formel:}
+\begin{equation}
+jaccard\_coefficient(X, Y) = \frac{|N(X) \cap N(Y)|}{|N(X) \cup N(Y)|}
+\label{eq:jaccard}
+\end{equation}
+
+\textbf{Beispiel:} $jaccard\_coefficient(A, C) = 2/4 = 0.5$. Wert liegt zwischen 0 (keine gemeinsamen) und 1 (alle gemeinsam).
+
+\subsubsection{Adamic-Adar}
+
+Adamic-Adar gewichtet gemeinsame Nachbarn: Nachbarn mit wenigen Verbindungen erhalten höheres Gewicht.
+
+\textbf{Formel:}
+\begin{equation}
+adamic\_adar(X, Y) = \sum_{u \in N(X) \cap N(Y)} \frac{1}{\ln(|N(u)|)}
+\label{eq:aa}
+\end{equation}
+
+\textbf{Beispiel:} Für gemeinsame Nachbarn $B$ und $D$ (beide mit 3 Nachbarn): $adamic\_adar(A, C) = 2/\ln(3) \approx 1.82$.
+
+\subsubsection{Resource Allocation}
+
+Resource Allocation modelliert Ressourcenübertragung über gemeinsame Nachbarn.
+
+\textbf{Formel:}
+\begin{equation}
+resource\_allocation(X, Y) = \sum_{u \in N(X) \cap N(Y)} \frac{1}{|N(u)|}
+\label{eq:ra}
+\end{equation}
+
+\textbf{Beispiel:} $resource\_allocation(A, C) = 1/3 + 1/3 = 2/3$. Ähnlich zu Adamic-Adar ohne logarithmische Abschwächung.
+
+\subsubsection{Preferential Attachment}
+
+Preferential Attachment basiert auf der Annahme, dass Knoten mit vielen Verbindungen mit höherer Wahrscheinlichkeit neue Kanten erhalten.
+
+\textbf{Formel:}
+\begin{equation}
+preferential\_attachment(X, Y) = |N(X)| \cdot |N(Y)|
+\label{eq:pa}
+\end{equation}
+
+\textbf{Beispiel:} $preferential\_attachment(A, C) = 3 \cdot 3 = 9$. Berücksichtigt nur Gradverteilung, nicht lokale Cluster.
+
+\subsection{Anwendung auf Fussballnetzwerke}
+
+Wir wenden die fünf Algorithmen auf zwei Netzwerktypen an:
+
+\textbf{Pass-Netzwerk (Germany):} 473 Knoten (Spieler), 8815 gerichtete Kanten (Pässe), gewichtet nach Passanzahl. Vorhersage neuer Passverbindungen zwischen Spielern.
+
+\textbf{Match-Netzwerk (World Cup):} 32 Knoten (Teams), 126 gerichtete Kanten (Spiele), Kantengewicht = erzielte Tore. Vorhersage zukünftiger Team-Begegnungen.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE8/common_neighbors_distribution.png}
+  \caption{Common Neighbors Score-Verteilungen. Links: Pass-Netzwerk (Germany) zeigt breite Verteilung von CN-Scores mit Peak bei 11-13 gemeinsamen Nachbarn. Rechts: Match-Netzwerk (World Cup) zeigt konzentrierte Verteilung mit dominant einem gemeinsamen Gegner.}
+  \label{fig:le8_cn_distribution}
+\end{figure}
+
+\subsection{Vergleich der Algorithmen}
+
+Um die Charakteristiken der Link-Prediction-Algorithmen zu verstehen, vergleichen wir ihre Vorhersagen über mehrere Dimensionen.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE8/jaccard_coefficient_analysis.png}
+  \caption{Jaccard Coefficient Analyse für beide Netzwerke. Obere Reihe: Score-Verteilungen zeigen unterschiedliche Normalisierungseffekte. Untere Reihe: Top-15 Predictions Comparison (links) und Korrelation zwischen CN und Jaccard (rechts) für Pass-Netzwerk.}
+  \label{fig:le8_jaccard}
+\end{figure}
+
+\subsubsection{Score-Verteilungen}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE8/algorithm_score_distributions.png}
+  \caption{Score-Verteilungen der fünf Algorithmen für Pass- (oben) und Match-Netzwerk (unten). Histogramme zeigen die Häufigkeitsverteilung der berechneten Scores.}
+  \label{fig:le8_score_distributions}
+\end{figure}
+
+CN und Jaccard zeigen diskrete Verteilungen, während AA und RA kontinuierliche, breiter gestreute Scores aufweisen. PA ist stark rechtsschief und fundamental verschieden von den nachbarschaftsbasierten Methoden.
+
+\subsubsection{Overlap- und Korrelations-Analyse}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Overlap (Jaccard Similarity) und Spearman-Korrelation für alle Algorithmus-Paare}
+\label{tab:le8_overlap}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Pass}} & \multicolumn{2}{c}{\textbf{Match}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Algorithmus-Paar} & Overlap & Korr. & Overlap & Korr. \\
+\midrule
+CN $\leftrightarrow$ Jaccard & 0.29 & 0.33 & 0.60 & 0.65 \\
+CN $\leftrightarrow$ Adamic-Adar & 0.67 & 0.96 & 0.60 & 0.66 \\
+CN $\leftrightarrow$ Resource Alloc & 0.43 & 0.66 & 0.60 & 0.66 \\
+CN $\leftrightarrow$ Pref. Attach & 0.03 & 0.58 & 0.21 & 0.34 \\
+Jaccard $\leftrightarrow$ Adamic-Adar & 0.38 & 0.36 & 0.60 & 0.49 \\
+Jaccard $\leftrightarrow$ Resource Alloc & 0.48 & 0.38 & 0.60 & 0.49 \\
+Jaccard $\leftrightarrow$ Pref. Attach & 0.00 & -0.43 & 0.11 & -0.47 \\
+Adamic-Adar $\leftrightarrow$ Resource Alloc & 0.67 & 0.83 & 1.00 & 1.00 \\
+Adamic-Adar $\leftrightarrow$ Pref. Attach & 0.03 & 0.53 & 0.11 & 0.11 \\
+Resource Alloc $\leftrightarrow$ Pref. Attach & 0.03 & 0.31 & 0.11 & 0.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Pass-Netzwerk:} CN und AA zeigen hohe Übereinstimmung (67\% Overlap, 0.95 Korrelation). Jaccard produziert diversere Rankings. PA unterscheidet sich fundamental (minimaler Overlap, negative Korrelation mit Jaccard).
+
+\textbf{Match-Netzwerk:} Uniformere Übereinstimmung zwischen nachbarschaftsbasierten Methoden (konsistent 60\% Overlap). AA und RA treffen identische Vorhersagen (100\%). PA bleibt auch hier ein Sonderfall.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/LE8/algorithm_overlap_correlation.png}
+  \caption{Overlap und Rang-Korrelation zwischen Algorithmen für Top-20-Vorhersagen. Oben: Pass-Netzwerk, Unten: Match-Netzwerk.}
+  \label{fig:le8_overlap}
+\end{figure}
+
+\subsubsection{Top-K Agreement mit Common Neighbors}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/LE8/algorithm_top_k_agreement.png}
+  \caption{Top-K Agreement mit CN als Baseline. Links: Pass-Netzwerk, Rechts: Match-Netzwerk.}
+  \label{fig:le8_topk}
+\end{figure}
+
+Im Pass-Netzwerk zeigt AA die höchste Konvergenz mit CN ($\sim$96\% bei K=50), während PA nahezu keine Überlappung aufweist. Im Match-Netzwerk erreichen AA, RA und Jaccard bei K=50 nahezu perfekte Übereinstimmung mit CN. Die dichtere Netzwerkstruktur führt zu deutlich höherer Algorithmenkonvergenz.
+
+\subsection{Interpretation und Anwendungsempfehlungen}
+
+\subsubsection{Pass-Netzwerk: Taktische Partnerschaften}
+
+Das Pass-Netzwerk profitiert von Methoden-Diversität:
 \begin{itemize}
-  \item Common Neighbors, Jaccard, Adamic--Adar
-  \item Preferential Attachment
-  \item Katz / Rooted PageRank
-  \item Einbettungen (z.B. node2vec) oder GNN (falls genutzt)
+  \item \textbf{CN/AA:} Identifizieren Spieler mit gemeinsamen taktischen Rollen
+  \item \textbf{Jaccard:} Hebt spezialisierte Verbindungen hervor
+  \item \textbf{RA:} Betont exklusive Partnerschaften
+  \item \textbf{PA:} Prognostiziert Hub-Dynamik
 \end{itemize}
 
-\subsection{Evaluation}
-\begin{itemize}
-  \item Train/Test Split (z.B. zeitbasiert), Negative Sampling
-  \item Metriken: AUC, Average Precision, Precision@k
-  \item Baselines und Ablations
-\end{itemize}
+\textbf{Empfehlung:} Kombination von AA/RA mit PA für Ensemble-Vorhersage.
 
-\subsection{Ergebnisse}
-\textit{Vergleiche Methoden, diskutiere Fehlerf\"alle und praktische Aussagekraft.}
+\subsubsection{Match-Netzwerk: Turnierstruktur}
+
+Höhere Homogenität zwischen nachbarschaftsbasierten Methoden reflektiert strukturierte Turniernatur.
+
+\textbf{Empfehlung:} CN oder AA als Hauptmethode; PA als ergänzende Perspektive.
+
+\subsubsection{Methodenwahl: Praktische Leitlinien}
+
+\begin{table}[H]
+\centering
+\caption{Algorithmen-Auswahl nach Anwendungsfall}
+\label{tab:le8_method_choice}
+\begin{tabular}{ll}
+\toprule
+\textbf{Situation} & \textbf{Empfohlene Methode} \\
+\midrule
+Dichte, geclusterte Netzwerke & Common Neighbors, Adamic-Adar \\
+Unterschiedliche Aktivitätsniveaus & Jaccard (normalisiert) \\
+Spezialisierte Beziehungen & Resource Allocation \\
+Hub-dominierte Netze & Preferential Attachment \\
+Ensemble-Ansatz & Kombination CN + JC + PA \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Fazit}
+
+Die Anwendung von Link-Prediction auf Fussballnetzwerke zeigt:
+
+\begin{enumerate}
+  \item \textbf{Methodenkomplexität vs. Performance:} Einfache Ansätze wie CN liefern gute Baseline-Resultate. AA und RA bieten inkrementelle Verbesserungen.
+  \item \textbf{Netzwerktyp bestimmt Methodik:} Pass-Netzwerke profitieren von diversen Methoden; Match-Netzwerke zeigen höhere Konvergenz.
+  \item \textbf{PA als orthogonale Perspektive:} Geringe Überlappung macht PA wertvoll für Ensemble-Ansätze.
+  \item \textbf{Praktischer Nutzen:} Identifikation neuer taktischer Passoptionen, Bewertung von Spieler-Kompatibilität, Vorhersage emergenter Spielmuster.
+\end{enumerate}
+
+\textbf{Ausblick:} Zukünftige Arbeiten könnten zusätzliche Features einbeziehen (Spielerpositionen, Match-Events, zeitliche Dynamiken) oder supervised Learning mit Ground-Truth-Daten aus späteren Saisonphasen evaluieren.
