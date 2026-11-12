@@ -1,0 +1,24 @@
+\babel@toc {ngerman}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\contentsline {table}{\numberline {1.1}{\ignorespaces Beispiele von 5 zufällig ausgewählten Spielen aus dem Gesamtdatensatz mit Spielbezeichnung, Datum, Austragungsort und Spieldauer.}}{3}{table.caption.8}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Vollständige Übersicht der Ereignistypen und Subtypen im Datensatz. Die Spalten geben die Event-ID und Subevent-ID sowie deren sprachliche Bezeichnung an.}}{4}{table.caption.9}%
+\contentsline {table}{\numberline {1.3}{\ignorespaces Ausschnitt eines Passnetzwerks: erste 10 Passverbindungen eines Beispielspiels (Match-ID 2500004) mit Anzahl der Pässe, mittlerer Distanz und Spielernamen.}}{9}{table.caption.18}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Übersicht der konstruierten Netzwerke (Germany; aus \texttt {.gexf} berechnet)}}{16}{table.caption.29}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Algorithmenvergleich auf Pass-Netzwerk (Deutschland, grösste Komponente)}}{21}{table.caption.34}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Community Detection auf Match-Netzwerk (World Cup)}}{22}{table.caption.37}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Degree und Strength Statistiken (Pass-Netzwerk Deutschland)}}{32}{table.caption.40}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Top-10 Spieler nach Gesamtzentralität (Pass-Netzwerk Deutschland)}}{35}{table.caption.44}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Diameter und Average Path Length}}{40}{table.caption.47}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Small-World-Check}}{40}{table.caption.48}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Clustering-Metriken}}{40}{table.caption.49}%
+\contentsline {table}{\numberline {5.4}{\ignorespaces Clustering vs. Zufallsnetzwerk}}{41}{table.caption.51}%
+\contentsline {table}{\numberline {5.5}{\ignorespaces Degree-Assortativity}}{42}{table.caption.53}%
+\contentsline {table}{\numberline {5.6}{\ignorespaces Reciprocity in gerichteten Netzwerken}}{42}{table.caption.54}%
+\contentsline {table}{\numberline {5.7}{\ignorespaces Edge Embeddedness}}{43}{table.caption.55}%
+\contentsline {table}{\numberline {5.8}{\ignorespaces Umfassende Netzwerk-Metriken (Zusammenfassung)}}{44}{table.caption.57}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Vergleich Zufallsgraph-Modelle (Pass-Netzwerk LCC, 283 Knoten, 2\,899 Kanten)}}{49}{table.caption.59}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Anpassung von Verteilungsmodellen (Kolmogorov-Smirnov Test)}}{50}{table.caption.62}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Link Prediction Performance (Pass-Netzwerk)}}{54}{table.caption.66}%
+\babel@toc {ngerman}{}\relax 

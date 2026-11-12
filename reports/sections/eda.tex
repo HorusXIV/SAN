@@ -39,6 +39,7 @@ Zur Veranschaulichung der Match-Metadaten zeigt Tabelle~\ref{tab:matches_sample}
 \centering
 \small
 \setlength{\tabcolsep}{6pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llll}
 
 \toprule
@@ -50,7 +51,8 @@ Everton - Southampton, 1 - 1 & May 5, 2018 at 6:30:00 PM GMT+2 & Goodison Park &
 Everton - Manchester United, 0 - 2 & January 1, 2018 at 6:30:00 PM GMT+1 & Goodison Park & Regular \\
 Stoke City - Liverpool, 0 - 3 & November 29, 2017 at 9:00:00 PM GMT+1 & Bet365 Stadium & Regular \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Beispiele von 5 zufällig ausgewählten Spielen aus dem Gesamtdatensatz mit Spielbezeichnung, Datum, Austragungsort und Spieldauer.}
 \label{tab:matches_sample}
 \end{table}
@@ -123,7 +125,7 @@ Die zeitliche Verteilung der Ereignisse über den Spielverlauf (Abbildung~\ref{f
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.9\linewidth]{figures/eda/events_per_minute.png}
+  \includegraphics[width=0.9\linewidth]{figures/eda/events_per_minute_normalized.png}
   \caption{Ereignisse pro Spielminute (kontinuierlich über beide Halbzeiten). Deutlich erkennbar sind erhöhte Aktivität zu Spielbeginn und der Rückgang in der Schlussphase.}
   \label{fig:events_per_minute}
 \end{figure}
@@ -157,12 +159,12 @@ Pässe bilden das Rückgrat der späteren Netzwerk-Analyse. Abbildung~\ref{fig:t
   \label{fig:top_passers}
 \end{figure}
 
-Neben räumlichen Mustern ist die enstruktur nach Passtyp zentral für die Interpretation von Netzwerkkanten: Abbildung~\ref{fig:pass_types_analysis} zeigt, dass einfache Pässe den Grossteil des Volumens ausmachen (ca. 251{,}405; ca. 76\% aller Pässe) und zugleich eine sehr hohe Genauigkeit aufweisen (91.69\%). Risikoreichere e (Flanken, Smart Passes) treten seltener auf und haben deutlich niedrigere Erfolgsraten (z.\,B. Flanken ca. 30.71\%). Für die spätere Netzwerkanalyse bedeutet dies: Gewichte werden stark durch kurze, sichere Verbindungen dominiert, während wenige riskante Kanten eher spielentscheidende Situationen abbilden.
+Neben räumlichen Mustern ist die enstruktur nach Passtyp zentral für die Interpretation von Netzwerkkanten: Abbildung~\ref{fig:pass_types_analysis} zeigt, dass \enquote{einfache Pässe} den Grossteil des Volumens ausmachen (ca. 251{,}405; ca. 76\% aller Pässe) und zugleich eine sehr hohe Genauigkeit aufweisen (91.69\%). Risikoreichere e (Flanken, Smart Passes) treten seltener auf und haben deutlich niedrigere Erfolgsraten (z.\,B. Flanken ca. 30.71\%). Für die spätere Netzwerkanalyse bedeutet dies: Gewichte werden stark durch kurze, sichere Verbindungen dominiert, während wenige riskante Kanten eher spielentscheidende Situationen abbilden.
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=\linewidth]{figures/eda/pass_types_analysis.png}
-  \caption{Passvolumen (links) und Passgenauigkeit (rechts) nach Passtyp (Top 12). einfache Pässe dominieren das Volumen bei hoher Genauigkeit; Flanken und Smart Passes sind seltener und deutlich ungenauer.}
+  \caption{Passvolumen (links) und Passgenauigkeit (rechts) nach Passtyp (Top 12). \enquote{einfache Pässe} dominieren das Volumen bei hoher Genauigkeit; Flanken und Smart Passes sind seltener und deutlich ungenauer.}
   \label{fig:pass_types_analysis}
 \end{figure}
 
@@ -180,7 +182,7 @@ Eine detaillierte räumliche Analyse der Pässe (Abbildung~\ref{fig:pass_distanc
   \label{fig:pass_distance_analysis}
 \end{figure}
 
-Als kompaktes Bindeglied zur Netzwerkanalyse illustriert Abbildung~\ref{fig:network_metrics_sample} die Rolleninterpretation einfacher Zentralitätskonzepte in einem Beispielspiel: Spieler oberhalb der Diagonalen erhalten mehr Pässe als sie spielen (Zielspieler), Spieler unterhalb verteilen mehr (Aufbauspieler), und Spieler nahe der Diagonalen sind ausgeglichen. Diese Intuition wird in LE5 bei der Interpretation von In-/Out-Degree und Brückenrollen (Betweenness) wieder aufgegriffen.
+Als kompaktes Bindeglied zur Netzwerkanalyse illustriert Abbildung~\ref{fig:network_metrics_sample} die Rolleninterpretation einfacher Zentralitätskonzepte in einem Beispielspiel: Spieler oberhalb der Diagonalen erhalten mehr Pässe als sie spielen (\enquote{Zielspieler}), Spieler unterhalb verteilen mehr (\enquote{Aufbauspieler}), und Spieler nahe der Diagonalen sind ausgeglichen. Diese Intuition wird in LE5 bei der Interpretation von In-/Out-Degree und Brückenrollen (Betweenness) wieder aufgegriffen.
 
 \begin{figure}[tbp]
   \centering

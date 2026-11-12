@@ -1,6 +1,8 @@
 \section*{Abstract}
 \noindent
-\textit{Kurzbeschreibung des Berichts (max. ca. 150--200 W\"orter). Beschreibe Ziel, Daten/Material, Methode und wichtigste Ergebnisse in wenigen S\"atzen.}
+Wir modellieren Fussballspiele als soziale Netzwerke. Grundlage sind Wyscout-Eventdaten aus sieben Wettbewerben: den Ligen Englands, Spaniens, Deutschlands, Frankreichs und Italiens sowie der Welt- und der Europameisterschaft. Aus den Events bauen wir vier Netzwerktypen: Pass-Netzwerke zwischen Spielern, Match-Netzwerke zwischen Teams, ein bipartites Spieler-Team-Netzwerk und ein Netzwerk aus Feldzonen. Wyscout liefert keinen Passempf\"anger. Wir bestimmen ihn \"uber die n\"achste Aktion des eigenen Teams innerhalb von 5 Sekunden und 10 Metern. F\"ur die Detailanalysen w\"ahlen wir die Bundesliga und die WM.
+
+Mit Louvain finden wir im Bundesliga-Passnetz Communities, die den realen Teams entsprechen ($Q = 0.886$). Innerhalb des FC K\"oln sinkt die Modularit\"at auf $Q = 0.109$, und jede der drei Communities enth\"alt Spieler mehrerer Positionen. Im WM-Match-Netz liefert Louvain sechs Communities ($Q = 0.701$). Sie folgen den acht Vorrundengruppen, wobei K.O.-Spiele einzelne Gruppen zusammenlegen. Grad und Betweenness korrelieren im Passnetz mit $r = 0.338$. Der Clustering-Koeffizient von 0.867 liegt 11.7-mal \"uber dem eines Erd\H{o}s-R\'enyi-Graphen gleicher Gr\"osse, und im Permutationstest gegen das Configuration Model erreicht kein Zufallsnetz diesen Wert ($p < 0.001$). Von den Passbeziehungen sind 92.7\,\% reziprok. Die Gradverteilung passt am besten zu einer Log-Normal-Verteilung (KS-Statistik $D = 0.067$); ein Power Law verwerfen wir ($p = 0.003$). Bei der Link Prediction erzielt Adamic-Adar mit einer AUC von 0.892 das beste Ergebnis.
 
 \vspace{2ex}
 

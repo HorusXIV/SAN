@@ -1,0 +1,539 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{apa/apasortcite//global/global}
+    \entry{arxiv_2024}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=33076935969dda6e5693c37acbaeaa29}{%
+           family={{arXiv}},
+           familyi={a\bibinitperiod}}}%
+      }
+      \strng{namehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{fullhash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{bibnamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authorbibnamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authornamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authorfullhash}{33076935969dda6e5693c37acbaeaa29}
+      \field{sortinit}{a}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{5}
+      \field{title}{Exploring the Independent Cascade Model and Its Evolution in Social Network Information Diffusion}
+      \field{titleaddon}{Accessed: 2026-01-04}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \true{nocite}
+      \verb{urlraw}
+      \verb https://arxiv.org/html/2405.10322v1
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/html/2405.10322v1
+      \endverb
+    \endentry
+    \entry{Clauset_2004}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=42b12665bdf3534fb7bb76c73fc17ebe}{%
+           family={Clauset},
+           familyi={C\bibinitperiod},
+           given={Aaron},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4bf3b98e94373b42e6f6e6dfddaf4daa}{%
+           family={Newman},
+           familyi={N\bibinitperiod},
+           given={M.\bibnamedelimi E.\bibnamedelimi J.},
+           giveni={M\bibinitperiod\bibinitdelim E\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=204e08828e2dc50ada9b8e498f43a1e2}{%
+           family={Moore},
+           familyi={M\bibinitperiod},
+           given={Cristopher},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6081b8a1f6a50540e08844eddba3e8ff}
+      \strng{fullhash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{bibnamehash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{authorbibnamehash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{authornamehash}{6081b8a1f6a50540e08844eddba3e8ff}
+      \strng{authorfullhash}{607421c0e4eb9bb940777f04f396f69c}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Physical Review E}
+      \field{number}{6}
+      \field{title}{Finding community structure in very large networks}
+      \field{volume}{70}
+      \field{year}{2004}
+      \verb{doi}
+      \verb 10.1103/physreve.70.066111
+      \endverb
+    \endentry
+    \entry{fotmob_no_date}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=a7c433ce1c85a0026e9753a9b95bbb83}{%
+           family={{FotMob.com}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{fullhash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{bibnamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authorbibnamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authornamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authorfullhash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{labeldatesource}{nodate}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{FotMob}}
+      \true{nocite}
+      \verb{urlraw}
+      \verb https://www.fotmob.com/leagues/47/stats/season/20720/teams/accurate_pass_team/premier-league-teams
+      \endverb
+      \verb{url}
+      \verb https://www.fotmob.com/leagues/47/stats/season/20720/teams/accurate_pass_team/premier-league-teams
+      \endverb
+    \endentry
+    \entry{karnowski_diffusion_2016}{inbook}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=82f67f0a147dd73e612bfc21d9a2d654}{%
+           family={Karnowski},
+           familyi={K\bibinitperiod},
+           given={V.},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e2e5c0c5859ab878f5a79a668f53bf7e}{%
+           family={Kümpel},
+           familyi={K\bibinitperiod},
+           given={A.\bibnamedelimi S.},
+           giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=4fbc2fd1a7afb2512394465b3b8dd530}{%
+           family={Potthoff},
+           familyi={P\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Fachmedien Wiesbaden}%
+      }
+      \strng{namehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{fullhash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{bibnamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authorbibnamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authornamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authorfullhash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{editorbibnamehash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \strng{editornamehash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \strng{editorfullhash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Schlüsselwerke der Medienwirkungsforschung}
+      \field{title}{Diffusion of Innovations}
+      \field{year}{2016}
+      \true{nocite}
+      \field{pages}{97\bibrangedash 107}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1007/978-3-658-09923-7_9
+      \endverb
+    \endentry
+    \entry{pappalardo-2019}{article}{}
+      \name{author}{7}{}{%
+        {{un=0,uniquepart=base,hash=f1dc088fdc6d46f2361a7f0bb668aefe}{%
+           family={Pappalardo},
+           familyi={P\bibinitperiod},
+           given={Luca},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1d375d5616731917814cbbc4718fb3d7}{%
+           family={Cintia},
+           familyi={C\bibinitperiod},
+           given={Paolo},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0462c2ef2e0c05927373ea3dc18da6fd}{%
+           family={Rossi},
+           familyi={R\bibinitperiod},
+           given={Alessio},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=21466aed638de3b701e217eae66a35ba}{%
+           family={Massucco},
+           familyi={M\bibinitperiod},
+           given={Emanuele},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a56d83e896383417c553388f0e01ad7a}{%
+           family={Ferragina},
+           familyi={F\bibinitperiod},
+           given={Paolo},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a2cc2c3b41c34d28b00e8b61bf830b42}{%
+           family={Pedreschi},
+           familyi={P\bibinitperiod},
+           given={Dino},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7b5335e9010800b63f5c2959f076d90f}{%
+           family={Giannotti},
+           familyi={G\bibinitperiod},
+           given={Fosca},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bb55b1b603362fbd54ec570284b360af}
+      \strng{fullhash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{bibnamehash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{authorbibnamehash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{authornamehash}{bb55b1b603362fbd54ec570284b360af}
+      \strng{authorfullhash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Scientific Data}
+      \field{month}{10}
+      \field{number}{1}
+      \field{title}{{A public data set of spatio-temporal match events in soccer competitions}}
+      \field{volume}{6}
+      \field{year}{2019}
+      \true{nocite}
+      \field{pages}{236}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s41597-019-0247-7
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1038/s41597-019-0247-7
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1038/s41597-019-0247-7
+      \endverb
+    \endentry
+    \entry{transfermarkt_no_date}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=586ad1744000e7dad08de5a63f9eace8}{%
+           family={{transfermarkt.ch}},
+           familyi={t\bibinitperiod}}}%
+      }
+      \strng{namehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{fullhash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{bibnamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authorbibnamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authornamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authorfullhash}{586ad1744000e7dad08de5a63f9eace8}
+      \field{sortinit}{t}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labeldatesource}{nodate}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Sandro Wagner - Spielerprofil}
+      \verb{urlraw}
+      \verb https://www.transfermarkt.ch/sandro-wagner/profil/spieler/39
+      \endverb
+      \verb{url}
+      \verb https://www.transfermarkt.ch/sandro-wagner/profil/spieler/39
+      \endverb
+    \endentry
+  \enddatalist
+  \datalist[entry]{apa/global//global/global}
+    \entry{arxiv_2024}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=33076935969dda6e5693c37acbaeaa29}{%
+           family={{arXiv}},
+           familyi={a\bibinitperiod}}}%
+      }
+      \strng{namehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{fullhash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{bibnamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authorbibnamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authornamehash}{33076935969dda6e5693c37acbaeaa29}
+      \strng{authorfullhash}{33076935969dda6e5693c37acbaeaa29}
+      \field{sortinit}{a}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{5}
+      \field{title}{Exploring the Independent Cascade Model and Its Evolution in Social Network Information Diffusion}
+      \field{titleaddon}{Accessed: 2026-01-04}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \true{nocite}
+      \verb{urlraw}
+      \verb https://arxiv.org/html/2405.10322v1
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/html/2405.10322v1
+      \endverb
+    \endentry
+    \entry{Clauset_2004}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=42b12665bdf3534fb7bb76c73fc17ebe}{%
+           family={Clauset},
+           familyi={C\bibinitperiod},
+           given={Aaron},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4bf3b98e94373b42e6f6e6dfddaf4daa}{%
+           family={Newman},
+           familyi={N\bibinitperiod},
+           given={M.\bibnamedelimi E.\bibnamedelimi J.},
+           giveni={M\bibinitperiod\bibinitdelim E\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=204e08828e2dc50ada9b8e498f43a1e2}{%
+           family={Moore},
+           familyi={M\bibinitperiod},
+           given={Cristopher},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6081b8a1f6a50540e08844eddba3e8ff}
+      \strng{fullhash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{bibnamehash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{authorbibnamehash}{607421c0e4eb9bb940777f04f396f69c}
+      \strng{authornamehash}{6081b8a1f6a50540e08844eddba3e8ff}
+      \strng{authorfullhash}{607421c0e4eb9bb940777f04f396f69c}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Physical Review E}
+      \field{number}{6}
+      \field{title}{Finding community structure in very large networks}
+      \field{volume}{70}
+      \field{year}{2004}
+      \verb{doi}
+      \verb 10.1103/physreve.70.066111
+      \endverb
+    \endentry
+    \entry{fotmob_no_date}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=a7c433ce1c85a0026e9753a9b95bbb83}{%
+           family={{FotMob.com}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{fullhash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{bibnamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authorbibnamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authornamehash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \strng{authorfullhash}{a7c433ce1c85a0026e9753a9b95bbb83}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{labeldatesource}{nodate}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{FotMob}}
+      \true{nocite}
+      \verb{urlraw}
+      \verb https://www.fotmob.com/leagues/47/stats/season/20720/teams/accurate_pass_team/premier-league-teams
+      \endverb
+      \verb{url}
+      \verb https://www.fotmob.com/leagues/47/stats/season/20720/teams/accurate_pass_team/premier-league-teams
+      \endverb
+    \endentry
+    \entry{karnowski_diffusion_2016}{inbook}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=82f67f0a147dd73e612bfc21d9a2d654}{%
+           family={Karnowski},
+           familyi={K\bibinitperiod},
+           given={V.},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e2e5c0c5859ab878f5a79a668f53bf7e}{%
+           family={Kümpel},
+           familyi={K\bibinitperiod},
+           given={A.\bibnamedelimi S.},
+           giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=4fbc2fd1a7afb2512394465b3b8dd530}{%
+           family={Potthoff},
+           familyi={P\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Fachmedien Wiesbaden}%
+      }
+      \strng{namehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{fullhash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{bibnamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authorbibnamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authornamehash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{authorfullhash}{d312867c2331088c6b8b00e505adef8f}
+      \strng{editorbibnamehash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \strng{editornamehash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \strng{editorfullhash}{4fbc2fd1a7afb2512394465b3b8dd530}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Schlüsselwerke der Medienwirkungsforschung}
+      \field{title}{Diffusion of Innovations}
+      \field{year}{2016}
+      \true{nocite}
+      \field{pages}{97\bibrangedash 107}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1007/978-3-658-09923-7_9
+      \endverb
+    \endentry
+    \entry{pappalardo-2019}{article}{}
+      \name{author}{7}{}{%
+        {{un=0,uniquepart=base,hash=f1dc088fdc6d46f2361a7f0bb668aefe}{%
+           family={Pappalardo},
+           familyi={P\bibinitperiod},
+           given={Luca},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1d375d5616731917814cbbc4718fb3d7}{%
+           family={Cintia},
+           familyi={C\bibinitperiod},
+           given={Paolo},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0462c2ef2e0c05927373ea3dc18da6fd}{%
+           family={Rossi},
+           familyi={R\bibinitperiod},
+           given={Alessio},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=21466aed638de3b701e217eae66a35ba}{%
+           family={Massucco},
+           familyi={M\bibinitperiod},
+           given={Emanuele},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a56d83e896383417c553388f0e01ad7a}{%
+           family={Ferragina},
+           familyi={F\bibinitperiod},
+           given={Paolo},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a2cc2c3b41c34d28b00e8b61bf830b42}{%
+           family={Pedreschi},
+           familyi={P\bibinitperiod},
+           given={Dino},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7b5335e9010800b63f5c2959f076d90f}{%
+           family={Giannotti},
+           familyi={G\bibinitperiod},
+           given={Fosca},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bb55b1b603362fbd54ec570284b360af}
+      \strng{fullhash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{bibnamehash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{authorbibnamehash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \strng{authornamehash}{bb55b1b603362fbd54ec570284b360af}
+      \strng{authorfullhash}{cc588eadaa39c244fc0faa74989ec0f4}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Scientific Data}
+      \field{month}{10}
+      \field{number}{1}
+      \field{title}{{A public data set of spatio-temporal match events in soccer competitions}}
+      \field{volume}{6}
+      \field{year}{2019}
+      \true{nocite}
+      \field{pages}{236}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s41597-019-0247-7
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1038/s41597-019-0247-7
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1038/s41597-019-0247-7
+      \endverb
+    \endentry
+    \entry{transfermarkt_no_date}{online}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=586ad1744000e7dad08de5a63f9eace8}{%
+           family={{transfermarkt.ch}},
+           familyi={t\bibinitperiod}}}%
+      }
+      \strng{namehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{fullhash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{bibnamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authorbibnamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authornamehash}{586ad1744000e7dad08de5a63f9eace8}
+      \strng{authorfullhash}{586ad1744000e7dad08de5a63f9eace8}
+      \field{sortinit}{t}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labeldatesource}{nodate}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Sandro Wagner - Spielerprofil}
+      \verb{urlraw}
+      \verb https://www.transfermarkt.ch/sandro-wagner/profil/spieler/39
+      \endverb
+      \verb{url}
+      \verb https://www.transfermarkt.ch/sandro-wagner/profil/spieler/39
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
